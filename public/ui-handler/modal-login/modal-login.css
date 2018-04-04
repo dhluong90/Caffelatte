@@ -1,0 +1,29 @@
+.modal-noti-login .modal-dialog {
+    width: 400px;
+}
+.modal-noti-login .modal-content .modal-header {
+    text-align: center;
+}
+
+.modal-noti-login .modal-content .modal-header h3 {
+    margin: 5px 0;
+}
+
+.modal-noti-login .modal-content .modal-header p{
+    margin: 0;
+}
+
+.modal-noti-login .modal-content .modal-body{
+    padding: 0;
+}
+
+.modal-noti-login .modal-content .modal-body a{
+    width: 50%;
+    float: left;
+    padding: 15px;
+    text-align: center;
+}
+
+.modal-noti-login .modal-content .modal-body .btn-login{
+    border-right: #e5e5e5 solid 1px;
+}

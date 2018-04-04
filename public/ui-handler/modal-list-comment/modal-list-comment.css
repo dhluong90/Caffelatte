@@ -1,0 +1,110 @@
+/* list comment */
+.modal-list-comment .modal-dialog {
+    width: 800px;
+    font-family: 'SourceSansPro-Regular';
+}
+.modal-list-comment .modal-content {
+    border-radius: 0;
+    background-image:  url(../../img/website/popup.jpg);
+}
+.modal-list-comment .modal-content .modal-header {
+    height: 95px;
+    color: #fff;
+}
+.modal-list-comment .modal-content .modal-header button {
+    color: #fff;
+    font-size: 36px;
+    opacity: 1;
+}
+.modal-list-comment .modal-content .modal-header h3{
+    margin: 0;
+}
+.modal-list-comment .modal-content .modal-header .link-most-modal {
+    width: 500px;
+    font-size: 14px;
+    margin-top: 25px;
+}
+.modal-list-comment .modal-content .modal-header .link-most-modal a {
+    color: #fff;
+    font-family: 'SourceSansPro-Regular';
+}
+.modal-list-comment .modal-content .modal-header .link-most-modal .active {
+    font-weight: 800;
+}
+.modal-list-comment .modal-content .modal-body {
+    background-color: #fafafa;
+}
+.modal-list-comment .modal-content .modal-body .content-right {
+    height: 100%;
+}
+.modal-list-comment .modal-content .modal-body .content-left {
+    background-color: #fff;
+    margin-top: -15px;
+    margin-bottom: -15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    min-height: 300px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .avatar-user {
+    float: left;
+}
+.modal-list-comment .modal-content .modal-body .content-left .avatar-user img{
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-point {
+    float: left;
+    margin-left: 10px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-point ul li{
+    display: inline;
+    padding-right: 15px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-point .list-point img{
+    display: -webkit-inline-box;
+    width: auto;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-comment-content {
+    clear: both;
+    border-top: 1px solid #eee;
+    padding-top: 5px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-comment-content .user-star {
+    float: left;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-comment-content .time {
+    float: left;
+    margin-left: 10px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .user-comment-content p {
+    clear: both;
+    padding-top: 10px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .owl-nav {
+    text-align: center;
+}
+.modal-list-comment .modal-content .modal-body .content-left .owl-nav .owl-prev,
+.modal-list-comment .modal-content .modal-body .content-left .owl-nav .owl-next {
+    width: 160px;
+    height: 45px;
+    border: 0;
+    background-color: #eee; 
+    border-radius: 0;
+    color: #000;
+    padding: 10px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .owl-nav div:hover {
+    background-color: #ddd;
+}
+.modal-list-comment .modal-content .modal-body .content-left .list-index {
+    height: 45px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.modal-list-comment .modal-content .modal-body .content-left .list-index p{
+    padding-top: 10px;
+}

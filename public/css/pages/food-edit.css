@@ -1,0 +1,921 @@
+/* ========================================================================== */
+
+
+/* ==================== STYLE FOR EDIT FOOD PAGE  ====================== */
+
+
+/* ========================================================================== */
+
+
+/* Section Banner */
+.delete-background {
+    background-color: #ff6666 !important;
+}
+
+.delete-background a {
+    color: #fff !important;
+}
+
+.section-banner {
+    font-family: 'SourceSansPro-Light';
+    color: #ffffff;
+    background-image: url("/img/website/bg_create_store.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.section-banner .banner {
+    padding: 55px 12%;
+}
+
+.section-banner .banner .title {
+    font-size: 40px;
+    text-transform: uppercase;
+    border-right: 1px solid gray;
+    padding: 15px;
+}
+
+.section-banner .banner .content {
+    font-size: 16px;
+    padding: 15px;
+}
+
+
+/* Section Tab Bar */
+
+.section-tab-bar {
+    -webkit-box-shadow: 0px 10px 15px 5px rgb(222, 222, 222);
+    -moz-box-shadow: 0px 10px 15px 5px rgb(222, 222, 222);
+    box-shadow: 0px 10px 15px 5px rgb(222, 222, 222);
+}
+
+.section-tab-bar .tab-bar .list-tabs {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.section-tab-bar .tab-bar .list-tabs li {
+    padding: 30px;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.active {
+    border: 10px solid transparent;
+    border-image: url(/img/website/bg_border_bottom.jpg);
+    -webkit-border-image: url(/img/website/bg_border_bottom.jpg);
+    /* Safari 3.1-5 */
+    -o-border-image: url(/img/website/bg_border_bottom.jpg);
+    /* Opera 11-12.1 */
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-image-slice: 1;
+}
+
+.section-tab-bar .tab-bar .list-tabs li a {
+    font-family: 'SourceSansPro-ExtraLight';
+    font-size: 30.5px;
+    color: #7c7c7c;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-tab-bar .tab-bar .list-tabs li a:hover {
+    opacity: 0.7;
+}
+
+.section-tab-bar .tab-bar .list-tabs li a .product-total {
+    color: #bfbfbf;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag {
+    padding-left: 0;
+    padding-right: 0;
+    position: relative;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag a i {
+    vertical-align: super;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #ffffff;
+    text-transform: uppercase;
+    background-color: #00e1be;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag a .tooltiptext {
+    position: absolute;
+    font-family: 'SourceSansPro-Regular';
+    font-size: 20px;
+    color: #7c7c7c;
+    background-color: #ffffff;
+    text-align: center;
+    white-space: nowrap;
+    padding: 10px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 6px;
+    z-index: 5;
+    opacity: 0;
+    -webkit-box-shadow: 5px 5px 10px -5px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 5px 5px 10px -5px rgba(0, 0, 0, 0.75);
+    box-shadow: 5px 5px 10px -5px rgba(0, 0, 0, 0.75);
+    -webkit-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    transition: all 0.6s;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag:hover .tooltiptext,
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag:hover a {
+    opacity: 1;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag .tooltip-top {
+    top: -35px;
+    margin-left: -60px;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag .tooltip-top::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.section-main-form {
+    margin-top: 45px;
+}
+
+.section-main-form .alert-error {
+    font-size: 15px;
+}
+
+.section-main-form .form-heading,
+.section-main-form .main-form {
+    padding: 0 12%;
+}
+
+.section-main-form .form-title h4 {
+    font-family: 'SourceSansPro-Light';
+    font-size: 40px;
+    color: #4d4d4d;
+    /*text-align: center;*/
+    text-transform: capitalize;
+}
+
+.section-main-form .form-buttons {
+    text-align: right;
+}
+
+.section-main-form .form-buttons .buttons-container {
+    display: inline;
+    padding: 18px 0;
+    border-radius: 30px;
+    background-color: #e6e6e6;
+}
+
+.section-main-form .form-buttons .buttons-container li:nth-child(1) {
+    padding: 15px 30px;
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+    background-color: #e6e6e6;
+}
+
+.section-main-form .form-buttons .buttons-container li:nth-child(2) {
+    padding: 15px 30px;
+    border-radius: 30px;
+    background-color: #00e1be;
+}
+
+.section-main-form .form-buttons .buttons-container li a {
+    font-family: 'SourceSansPro-Regular';
+    font-size: 18px;
+    color: #333333;
+    -webkit-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    transition: all 0.6s;
+}
+
+.section-main-form .form-buttons .buttons-container li a:hover {
+    opacity: 0.7;
+}
+
+.section-main-form .form-buttons .buttons-container .btn-submit span {
+    margin-right: 10px;
+}
+
+.section-main-form .form-buttons .buttons-container .btn-reset {
+    margin-left: 10px;
+}
+
+.section-main-form .form-buttons .buttons-container .btn-submit,
+.section-main-form .form-buttons .buttons-container li:nth-child(2) i {
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.section-main-form .divider {
+    border-top: 2px solid #f7f7f7;
+}
+
+.section-main-form .main-form {
+    padding-top: 45px;
+}
+
+.section-main-form .left-form .upload-image-box {
+    position: relative;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    line-height: 130px;
+}
+
+.section-main-form .left-form .left-form-item {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    padding-top: 15px;
+    border-top: 1px dashed #d8d8d8;
+}
+
+.section-main-form .left-form .left-form-item input {
+    border-radius: 0;
+}
+
+.section-main-form .left-form .price-title {
+    margin-bottom: 15px;
+}
+
+.section-main-form .left-form .price-range {
+    margin-top: 59px;
+}
+
+.section-main-form .left-form .price-range .radio {
+    margin: 0;
+}
+
+.section-main-form .left-form .price-range .radio label {
+    line-height: 20px;
+}
+
+.section-main-form .left-form .price-range .radio input {
+    transform: scale(1.5);
+}
+
+.section-main-form .left-form .price-range .from-price-container,
+.section-main-form .left-form .price-range .to-price-container {
+    text-align: right;
+    margin-bottom: 15px;
+}
+
+.section-main-form .left-form .reset-padding-right {
+    padding-right: 0;
+}
+
+.section-main-form .left-form .reset-padding-left {
+    padding-left: 0;
+}
+
+.section-main-form .left-form .currency {
+    padding: 30px 0;
+    margin-bottom: 0;
+}
+
+.section-main-form .left-form .tags .btn-more-tag {
+    position: relative;
+    font-family: 'SourceSansPro-Semibold';
+    font-size: 13px;
+    color: #ffffff;
+    text-transform: uppercase;
+    padding: 10px 23px;
+    background-color: #00e1be;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-main-form .left-form .tags .btn-more-tag:hover {
+    opacity: 0.7;
+}
+
+.section-main-form .left-form .tags .btn-more-tag i {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10px;
+    font-size: 20px;
+}
+
+.section-main-form .left-form .tags span {
+    font-family: 'SourceSansPro-ExtraLight';
+    font-size: 14px;
+    color: #7c7c7c;
+    text-transform: uppercase;
+    margin-left: 15px;
+}
+
+.section-main-form .left-form .tags .list-all-tags span,
+.section-main-form .left-form .tags .tags-container span {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'SourceSansPro-Semibold';
+    font-size: 13px;
+    color: #ffffff;
+    margin-left: 0;
+    line-height: 35px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.section-main-form .left-form .tags .tags-container {
+    padding-top: 45px;
+}
+
+.section-main-form .left-form .tags .tag {
+    display: inline-block;
+    /*position: relative;*/
+    font-family: 'SourceSansPro-Semibold';
+    font-size: 13px;
+    color: #ffffff;
+    text-transform: uppercase;
+    padding: 10px 0;
+    text-align: center;
+    white-space: nowrap;
+    background-image: url(/img/website/slider-bg-caption.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    border: none;
+    text-indent: -1000%;
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+
+/*.section-main-form .left-form .tags .tags-container .tag:hover i {
+    opacity: 1;
+}*/
+
+.section-main-form .left-form .tags .tags-container .btn-remove-tag {
+    opacity: 0.5;
+    position: absolute;
+    top: 0;
+    right: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-main-form .left-form .tags .list-all-tags .btn-remove-tag {
+    display: none;
+}
+
+.section-main-form .left-form .tags .tags-container .btn-remove-tag:hover {
+    opacity: 1;
+}
+
+.section-main-form .left-form .tags .dropdown-wp {
+    display: none;
+    width: 300%;
+    position: absolute;
+    z-index: 100;
+    background-color: #fff;
+    margin-top: 10px;
+    box-shadow: 0 0 4px 1px #e6e6e6;
+    -webkit-box-shadow: 0 0 4px 1px #e6e6e6;
+    -moz-webkit-box-shadow: 0 0 4px 1px #e6e6e6;
+    -ms-webkit-box-shadow: 0 0 4px 1px #e6e6e6;
+    -o-webkit-box-shadow: 0 0 4px 1px #e6e6e6;
+}
+
+.section-main-form .left-form .tags .dropdown-wp .dropdown-content {
+    margin: 30px;
+}
+
+.section-main-form .left-form .tags .dropdown-wp .dropdown-content h3 {
+    font-family: 'SourceSansPro-Light';
+    color: #4d4d4d;
+}
+
+.section-main-form .left-form .tags .tags-container div,
+.section-main-form .left-form .tags .dropdown-wp .dropdown-content .list-all-tags div {
+    position: relative;
+    display: inline-block;
+    margin: 0 10px 10px 0;
+}
+
+.section-main-form .right-form .form-group {
+    margin-bottom: 35px;
+}
+
+.section-main-form .right-form input {
+    border-radius: 0;
+}
+
+.section-main-form .right-form textarea {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 0;
+}
+
+.section-main-form .right-form .input-heading {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    text-align: right;
+    padding-top: 3px;
+    padding-right: 0;
+    white-space: nowrap;
+}
+
+.section-main-form .right-form .guide-links-container .input-heading {
+    text-align: left;
+}
+
+.section-main-form .right-form .input-heading label {
+    font-weight: normal;
+}
+
+.section-main-form .right-form .guides {
+    position: relative;
+    margin-top: 86px;
+    padding: 30px 15px;
+    border: 1px dashed #d8d8d8;
+}
+
+.section-main-form .right-form .guides input,
+.section-main-form .right-form .guide-steps-container .guide-step-time label,
+.section-main-form .right-form .guide-steps-container .guide-step-description textarea {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+}
+
+.section-main-form .right-form .guides .guide-heading {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    position: absolute;
+    top: -15px;
+    left: 20%;
+    padding: 0 10px;
+    background-color: #fdfdfd;
+    text-transform: uppercase;
+}
+
+.section-main-form .right-form .guides .btn-add-more {
+    padding: 8px 20px;
+    line-height: 35px;
+    border-radius: 30px;
+    background-color: #00e1be;
+    color: #ffffff;
+    -webkit-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    transition: all 0.6s;
+}
+
+.section-main-form .right-form .guides .btn-add-more:hover {
+    opacity: 0.7;
+}
+
+.section-main-form .right-form .guides .btn-add-more span {
+    margin-right: 10px;
+}
+
+.section-main-form .right-form .guide-steps-container {
+    margin-bottom: 75px;
+}
+
+.section-main-form .right-form .guide-steps-container .guide-step,
+.section-main-form .right-form .guide-links-container .link {
+    margin-bottom: 30px;
+}
+
+.section-main-form .right-form .guide-links-container label {
+    font-family: 'SourceSansPro-Semibold';
+    font-size: 20px;
+    color: #333333;
+}
+
+.section-main-form .right-form .guide-steps-container .guide-step-number h5 {
+    font-family: 'SourceSansPro-Semibold';
+    font-size: 20px;
+    color: #333333;
+}
+
+.section-main-form .right-form .guide-steps-container .guide-step-time input {
+    width: 60%;
+    display: inline-block;
+    float: right;
+}
+
+.section-main-form .right-form .guide-steps-container .guide-step-description {
+    margin-top: 15px;
+}
+
+.section-main-form .right-form .guide-steps-container .more-step,
+.section-main-form .right-form .guide-links-container .more-link,
+.section-main-form .right-form .guide-links-container .remove-link {
+    text-align: center;
+}
+
+.section-main-form .right-form .guide-steps-container .more-step .btn-more-step,
+.section-main-form .right-form .guide-links-container .more-link .btn-more-link,
+.section-main-form .right-form .guide-steps-container .btn-remove-step,
+.section-main-form .right-form .guide-links-container .btn-remove-link {
+    position: relative;
+    font-family: 'SourceSansPro-Semibold';
+    font-size: 13px;
+    color: #ffffff;
+    text-transform: uppercase;
+    padding: 15px 60px;
+    background-color: #00e1be;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-main-form .right-form .guide-steps-container .remove-step {
+    text-align: right;
+}
+
+.section-main-form .right-form .guide-steps-container .btn-remove-step {
+    display: list-item;
+    padding: 10px 25px;
+}
+
+.section-main-form .right-form .guide-links-container .btn-remove-link {
+    display: inline-block;
+    padding: 8px 15px;
+}
+
+.section-main-form .right-form .guide-steps-container .more-step .btn-more-step:hover,
+.section-main-form .right-form .guide-links-container .more-link .btn-more-link:hover,
+.section-main-form .right-form .guide-steps-container .btn-remove-step:hover,
+.section-main-form .right-form .guide-links-container .btn-remove-link:hover {
+    opacity: 0.7;
+}
+
+.section-main-form .right-form .guide-steps-container .more-step .btn-more-step i,
+.section-main-form .right-form .guide-links-container .more-link .btn-more-link i,
+.section-main-form .right-form .guide-steps-container .btn-remove-step i {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 15px;
+    font-size: 20px;
+}
+
+.section-main-form .right-form .guide-steps-container .btn-remove-step i {
+    top: 10px;
+}
+
+.section-main-form .main-form .form-buttons {
+    margin-top: 60px;
+    margin-bottom: 120px;
+    text-align: center;
+}
+
+.section-main-form .right-form .guides .guides-container .guide {
+    margin-bottom: 15px;
+}
+
+
+/* ==========================================================================
+   Responsive CSS Landscape Tablet -- Create Food Page
+   ========================================================================== */
+
+@media only screen and (min-width: 960px) and (max-width: 1240px) {
+    .section-main-form .right-form .input-heading {
+        white-space: normal;
+    }
+    .section-main-form .right-form .guides {
+        padding: 15px;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time input {
+        width: 50%;
+    }
+}
+
+@media only screen and (min-width: 960px) and (max-width: 991px) {
+    .section-banner .banner {
+        text-align: center;
+    }
+    .section-banner .banner .title {
+        border-right: none;
+    }
+    .section-main-form .right-form .guides .guide-heading {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .left-form .upload-image-box {
+        width: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .guides .guide-total {
+        margin: auto;
+    }
+    .section-main-form .left-form .tags .dropdown-wp {
+        width: auto;
+    }
+    .section-main-form .right-form .guides .add-more-guides,
+    .section-main-form .right-form .guides .add-more-links {
+        text-align: center;
+        padding-top: 15px;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time {
+        margin: 15px 0;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time label {
+        margin-right: 15px;
+        float: left;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time input {
+        width: 35%;
+        float: left;
+    }
+}
+
+
+/* ==========================================================================
+   Responsive CSS Portrait Tablet -- Create Food Page
+   ========================================================================== */
+
+@media only screen and (min-width: 768px) and (max-width: 959px) {
+    .section-banner .banner {
+        text-align: center;
+    }
+    .section-banner .banner .title {
+        border-right: none;
+    }
+    .section-tab-bar .tab-bar .list-tabs li a {
+        font-size: 25px;
+    }
+    .section-main-form .form-title,
+    .section-main-form .form-buttons {
+        text-align: center;
+    }
+    .section-main-form .right-form .guides {
+        padding: 15px;
+    }
+    .section-main-form .right-form .guides .guide-heading {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .left-form .upload-image-box {
+        width: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .guides .guide-total {
+        margin: auto;
+    }
+    .section-main-form .left-form .tags .dropdown-wp {
+        width: auto;
+    }
+    .section-main-form .right-form .guides .add-more-guides,
+    .section-main-form .right-form .guides .add-more-links {
+        text-align: center;
+        padding-top: 15px;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time {
+        margin: 15px 0;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time label {
+        margin-right: 15px;
+        float: left;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time input {
+        width: 35%;
+        float: left;
+    }
+}
+
+
+/* ==========================================================================
+   Responsive CSS Landscape Mobile -- Create Food Page
+   ========================================================================== */
+
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+    .section-banner .banner {
+        text-align: center;
+        padding: 30px 0;
+    }
+    .section-banner .banner .title {
+        border-right: none;
+        padding: 0 15px;
+    }
+    .section-banner .banner .content {
+        font-size: 15px;
+        padding: 0 15px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li {
+        padding: 5px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li a {
+        font-size: 20px;
+    }
+    .section-main-form .form-title,
+    .section-main-form .form-buttons {
+        text-align: center;
+    }
+    .section-main-form .form-heading,
+    .section-main-form .main-form {
+        padding: 0;
+    }
+    .section-main-form .right-form .guides {
+        padding: 15px;
+    }
+    .section-main-form .right-form .guides .guide-heading {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .left-form .upload-image-box {
+        max-width: 300px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .guides .guide-total {
+        width: 25%;
+        margin: auto;
+        margin-bottom: 15px;
+    }
+    .section-main-form .left-form .tags .dropdown-wp {
+        width: 90%;
+    }
+    .section-main-form .left-form .price-title {
+        padding: 0 15px;
+    }
+    .section-main-form .left-form .reset-padding-left {
+        padding-left: 15px;
+    }
+    .section-main-form .left-form .reset-padding-right {
+        padding-right: 15px;
+    }
+    .section-main-form .left-form .tags .tags-container {
+        padding: 70px 15px 0 15px;
+    }
+    .section-main-form .right-form .guides .add-more-guides,
+    .section-main-form .right-form .guides .add-more-links {
+        text-align: center;
+        padding-top: 15px;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time {
+        margin: 15px 0;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time label {
+        margin-right: 15px;
+        float: left;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time input {
+        width: 35%;
+        float: left;
+    }
+}
+
+
+/* ==========================================================================
+   Responsive CSS Portrait Mobile -- Create Food Page
+   ========================================================================== */
+
+@media only screen and (min-width: 100px) and (max-width: 479px) {
+    .section-banner .banner {
+        text-align: center;
+        padding: 30px 0;
+    }
+    .section-banner .banner .title {
+        font-size: 27px;
+        border-right: none;
+        padding: 0 15px;
+    }
+    .section-banner .banner .content {
+        font-size: 15px;
+        padding: 0 15px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li {
+        display: list-item;
+        padding: 5px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li a {
+        font-size: 20px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li.btn-more-tag .tooltiptext {
+        display: none;
+    }
+    .section-main-form .form-title,
+    .section-main-form .form-buttons {
+        text-align: center;
+    }
+    .section-main-form .form-buttons .buttons-container {
+        padding: 17px 0;
+    }
+    .section-main-form .form-buttons .buttons-container li:nth-child(1),
+    .section-main-form .form-buttons .buttons-container li:nth-child(2) {
+        padding: 15px;
+    }
+    .section-main-form .form-buttons .buttons-container li a {
+        font-size: 16px;
+    }
+    .section-main-form .form-heading,
+    .section-main-form .main-form {
+        padding: 0;
+    }
+    .section-main-form .left-form .left-form-item {
+        font-size: 19px;
+    }
+    .section-main-form .right-form .guides {
+        padding: 15px;
+    }
+    .section-main-form .right-form .guides .guide-heading {
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 15px;
+        top: -12px;
+    }
+    .section-main-form .left-form .upload-image-box {
+        max-width: 300px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .guides .guide-total {
+        width: 25%;
+        margin: auto;
+        margin-bottom: 15px;
+    }
+    .section-main-form .left-form .tags .dropdown-wp {
+        width: 150%;
+        left: 50%;
+        transform: translateX(-84%);
+    }
+    .section-main-form .left-form .price-title {
+        padding: 0 15px;
+    }
+    .section-main-form .left-form .reset-padding-left {
+        padding-left: 15px;
+    }
+    .section-main-form .left-form .reset-padding-right {
+        padding-right: 15px;
+    }
+    .section-main-form .left-form .tags span {
+        font-size: 12px;
+        /*white-space: nowrap;*/
+        margin-left: 2px;
+    }
+    .section-main-form .left-form .tags .tags-container {
+        padding: 70px 15px 0 15px;
+    }
+    .section-main-form .right-form .guides .add-more-guides,
+    .section-main-form .right-form .guides .add-more-links {
+        text-align: center;
+        padding-top: 15px;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time {
+        margin: 15px 0;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time label {
+        margin-right: 15px;
+        float: left;
+    }
+    .section-main-form .right-form .guide-steps-container .guide-step-time input {
+        width: 35%;
+        float: left;
+    }
+}

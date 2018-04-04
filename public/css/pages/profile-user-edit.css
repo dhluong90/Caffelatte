@@ -1,0 +1,691 @@
+/* ========================================================================== */
+
+
+/* ==================== STYLE FOR CREATE STORE PAGE  ====================== */
+
+
+/* ========================================================================== */
+
+.right-form .form-group span {
+    font-family: 'SourceSansPro-Light';
+    font-size: 30px;
+    color: #333333;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.form-group .profile-text span {
+    font-size: 20px;
+}
+
+.manage-heading {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom-style: dotted;
+    border-bottom-color: #e8e8e8;
+}
+
+.right-form .form-group .manage-heading span {
+    font-size: 20px;
+}
+
+.manage {
+    padding: 30px;
+}
+
+.manage-store span {
+    font-size: 30px;
+}
+
+.manage-store a,
+.manage-cook a {
+    display: inline-block;
+    background-color: #00e1be;
+    margin-top: 15px;
+    padding: 12px 12px;
+    color: #fff;
+    border-radius: 5px 5px;
+    font-weight: bold;
+}
+
+.manage-store {
+    border-right: 1px solid #e8e8e8;
+    text-align: center;
+}
+
+.manage {
+    text-align: center;
+}
+
+.tab-bar {
+    position: relative;
+}
+
+
+/* Section Banner */
+
+.intro {
+    background-image: -webkit-linear-gradient(top, #f2dede 0, #e7c3c3 100%);
+    background-image: -o-linear-gradient(top, #f2dede 0, #e7c3c3 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#f2dede), to(#e7c3c3));
+    background-image: linear-gradient(to bottom, #f2dede 0, #e7c3c3 100%);
+    filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#fff2dede', endColorstr='#ffe7c3c3', GradientType=0);
+    background-repeat: repeat-x;
+    border-color: #dca7a7;
+    padding: 9px 0px 9px 45px;
+    font-size: 16px;
+}
+
+.error {
+    color: #a94442;
+}
+
+.section-banner {
+    font-family: 'SourceSansPro-Light';
+    color: #ffffff;
+    background-image: url('/img/website/bg_create_store.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.section-banner .banner {
+    padding: 55px 12%;
+}
+
+.section-banner .banner .title {
+    font-size: 40px;
+    text-transform: uppercase;
+    border-right: 1px solid gray;
+    padding: 15px;
+}
+
+.section-banner .banner .content {
+    font-size: 16px;
+    padding: 15px;
+}
+
+
+/* Section Tab Bar */
+
+.section-tab-bar {
+    -webkit-box-shadow: 0px 10px 15px 5px rgb(222, 222, 222);
+    -moz-box-shadow: 0px 10px 15px 5px rgb(222, 222, 222);
+    box-shadow: 0px 10px 15px 5px rgb(222, 222, 222);
+}
+
+.section-tab-bar .tab-bar .list-tabs {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.section-tab-bar .tab-bar .list-tabs li {
+    padding: 30px;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.active {
+    border: 10px solid transparent;
+    border-image: url('/img/website/bg_border_bottom.jpg');
+    -webkit-border-image: url('/img/website/bg_border_bottom.jpg');
+    /* Safari 3.1-5 */
+    -o-border-image: url('/img/website/bg_border_bottom.jpg');
+    /* Opera 11-12.1 */
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-image-slice: 1;
+}
+
+.section-tab-bar .tab-bar .list-tabs li a {
+    font-family: 'SourceSansPro-ExtraLight';
+    font-size: 30.5px;
+    color: #7c7c7c;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-tab-bar .tab-bar .list-tabs li a:hover {
+    opacity: 0.7;
+}
+
+.section-tab-bar .tab-bar .list-tabs li a .product-total {
+    color: #bfbfbf;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag {
+    padding-left: 0;
+    padding-right: 0;
+    position: relative;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag a i {
+    vertical-align: super;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #ffffff;
+    text-transform: uppercase;
+    background-color: #00e1be;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag a .tooltiptext {
+    position: absolute;
+    font-family: 'SourceSansPro-Regular';
+    font-size: 20px;
+    color: #7c7c7c;
+    background-color: #ffffff;
+    text-align: center;
+    white-space: nowrap;
+    padding: 10px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 6px;
+    z-index: 5;
+    opacity: 0;
+    -webkit-box-shadow: 5px 5px 10px -5px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 5px 5px 10px -5px rgba(0, 0, 0, 0.75);
+    box-shadow: 5px 5px 10px -5px rgba(0, 0, 0, 0.75);
+    -webkit-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    transition: all 0.6s;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag:hover .tooltiptext,
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag:hover a {
+    opacity: 1;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag .tooltip-top {
+    top: -35px;
+    margin-left: -60px;
+}
+
+.section-tab-bar .tab-bar .list-tabs li.btn-more-tag .tooltip-top::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.section-main-form {
+    margin-top: 45px;
+}
+
+.section-main-form .form-heading,
+.section-main-form .main-form {
+    padding: 0 12%;
+}
+
+.section-main-form .form-title h4 {
+    font-family: 'SourceSansPro-Light';
+    font-size: 40px;
+    color: #4d4d4d;
+    /*text-align: center;*/
+    text-transform: capitalize;
+}
+
+.section-main-form .form-buttons {
+    text-align: right;
+}
+
+.section-main-form .form-buttons .buttons-container {
+    display: inline;
+    padding: 18px 0;
+    border-radius: 30px;
+    background-color: #e6e6e6;
+}
+
+.section-main-form .form-buttons .buttons-container li:nth-child(1) {
+    padding: 12px 30px;
+    /*border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;*/
+    border-radius: 30px 30px;
+    background-color: #e6e6e6;
+}
+
+.section-main-form .form-buttons .buttons-container li:nth-child(2) {
+    padding: 16px 30px;
+    border-radius: 30px;
+    background-color: #00e1be;
+}
+
+.section-main-form .form-buttons .buttons-container li a {
+    font-family: 'SourceSansPro-Regular';
+    font-size: 18px;
+    color: #333333;
+    -webkit-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    transition: all 0.6s;
+}
+
+.section-main-form .form-buttons .buttons-container li a:hover {
+    opacity: 0.7;
+}
+
+.section-main-form .form-buttons .buttons-container .btn-delete-account,
+.section-main-form .form-buttons .buttons-container .btn-back {
+    margin-left: 10px;
+}
+
+.section-main-form .form-buttons .buttons-container .btn-submit {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.section-main-form .form-buttons .buttons-container .btn-submit,
+.section-main-form .form-buttons .buttons-container li:nth-child(2) i {
+    color: #ffffff;
+}
+
+.section-main-form .divider {
+    border-top: 2px solid #f7f7f7;
+}
+
+.section-main-form .main-form {
+    padding-top: 45px;
+}
+
+.section-main-form .left-form .upload-image-box {
+    position: relative;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    line-height: 130px;
+}
+
+.section-main-form .left-form .upload-image-box img {
+    /*max-height: 170px;*/
+}
+
+.section-main-form .left-form .open-time,
+.section-main-form .left-form .close-time,
+.section-main-form .left-form .from-date,
+.section-main-form .left-form .to-date {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    text-align: center;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.section-main-form .left-form .open-time select,
+.section-main-form .left-form .close-time select,
+.section-main-form .left-form .from-date select,
+.section-main-form .left-form .to-date select {
+    width: 75%;
+    height: 45px;
+    margin: auto;
+    border-radius: 0;
+}
+
+.section-main-form .left-form .form-title {
+    position: relative;
+    font-family: 'SourceSansPro-SemiBold';
+    font-size: 20px;
+    color: #333333;
+    padding: 0 15px;
+    text-align: center;
+}
+
+.section-main-form .left-form .form-title::before,
+.section-main-form .left-form .form-title::after {
+    content: "";
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    width: 25px;
+    border: 1px dashed #f4f4f4;
+}
+
+.section-main-form .left-form .form-title::before {
+    left: 35px;
+}
+
+.section-main-form .right-form .form-group {
+    margin-bottom: 35px;
+}
+
+.section-main-form .right-form input {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    border-radius: 0;
+}
+
+.section-main-form .right-form textarea {
+    width: 100%;
+    border: 1px solid #ccc;
+}
+
+.section-main-form .right-form .input-heading {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    text-align: right;
+    padding-right: 0;
+    padding-top: 3px;
+    white-space: nowrap;
+}
+
+.section-main-form .right-form .branches {
+    position: relative;
+    margin-top: 75px;
+    padding: 30px;
+    border: 1px dashed #d8d8d8;
+}
+
+.section-main-form .right-form .branches .branch-heading {
+    font-family: 'SourceSansPro-Light';
+    font-size: 20px;
+    color: #333333;
+    position: absolute;
+    top: -15px;
+    left: 20%;
+    padding: 0 10px;
+    background-color: #fdfdfd;
+    text-transform: uppercase;
+}
+
+.section-main-form .right-form .branches .branch-total {
+    /*width: 25%;*/
+}
+
+.section-main-form .right-form .branches .btn-add-more {
+    padding: 8px 20px;
+    line-height: 35px;
+    border-radius: 30px;
+    background-color: #00e1be;
+    color: #ffffff;
+    -webkit-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    transition: all 0.6s;
+}
+
+.section-main-form .right-form .branches .btn-add-more:hover {
+    opacity: 0.7;
+}
+
+.section-main-form .right-form .branches .btn-add-more span {
+    margin-right: 10px;
+}
+
+.section-main-form .right-form .branches .branches-container .branch {
+    margin-bottom: 15px;
+}
+
+.section-main-form .main-form .form-buttons {
+    margin-top: 60px;
+    margin-bottom: 120px;
+    text-align: center;
+}
+
+
+/* ==========================================================================
+   Responsive CSS Landscape Tablet -- Create Store Page
+   ========================================================================== */
+
+@media only screen and (min-width: 960px) and (max-width: 1240px) {
+    .section-main-form .right-form .input-heading {
+        white-space: normal;
+    }
+    .section-main-form .right-form .branches {
+        padding: 15px;
+    }
+    .section-main-form .left-form .form-title::before,
+    .section-main-form .left-form .form-title::after {
+        display: none;
+    }
+}
+
+@media only screen and (min-width: 960px) and (max-width: 991px) {
+    .section-banner .banner,
+    .section-main-form .right-form {
+        text-align: center;
+    }
+    .section-banner .banner .title {
+        border-right: none;
+    }
+    .section-main-form .right-form .branches .branch-heading {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .left-form .upload-image-box {
+        width: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .branches .branch-total {
+        margin: auto;
+    }
+    .section-main-form .right-form .branches .add-more-branches {
+        text-align: center;
+        padding-top: 15px;
+    }
+    .manage-store {
+        border-right: none;
+        margin-bottom: 30px;
+    }
+}
+
+
+/* ==========================================================================
+   Responsive CSS Portrait Tablet -- Create Store Page
+   ========================================================================== */
+
+@media only screen and (min-width: 768px) and (max-width: 959px) {
+    .section-banner .banner,
+    .section-main-form .right-form {
+        text-align: center;
+    }
+    .section-banner .banner .title {
+        border-right: none;
+    }
+    .section-tab-bar .tab-bar .list-tabs li a {
+        font-size: 25px;
+    }
+    .section-main-form .form-title,
+    .section-main-form .form-buttons {
+        text-align: center;
+    }
+    .section-main-form .right-form .branches {
+        padding: 15px;
+    }
+    .section-main-form .left-form .form-title::before,
+    .section-main-form .left-form .form-title::after {
+        display: none;
+    }
+    .section-main-form .right-form .branches .branch-heading {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .left-form .upload-image-box {
+        width: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .branches .branch-total {
+        margin: auto;
+    }
+    .section-main-form .right-form .branches .add-more-branches {
+        text-align: center;
+        padding-top: 15px;
+    }
+    .manage-store {
+        border-right: none;
+        margin-bottom: 30px;
+    }
+}
+
+
+/* ==========================================================================
+   Responsive CSS Landscape Mobile -- Create Store Page
+   ========================================================================== */
+
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+    .section-banner .banner,
+    .section-main-form .right-form {
+        text-align: center;
+        padding: 30px 0;
+    }
+    .section-banner .banner .title {
+        border-right: none;
+        padding: 0 15px;
+    }
+    .section-banner .banner .content {
+        font-size: 15px;
+        padding: 0 15px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li {
+        padding: 5px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li a {
+        font-size: 20px;
+    }
+    .section-main-form .form-title,
+    .section-main-form .form-buttons {
+        text-align: center;
+    }
+    .section-main-form .form-heading,
+    .section-main-form .main-form {
+        padding: 0;
+    }
+    .section-main-form .right-form .branches {
+        padding: 15px;
+    }
+    .section-main-form .left-form .form-title::before,
+    .section-main-form .left-form .form-title::after {
+        display: none;
+    }
+    .section-main-form .right-form .branches .branch-heading {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .left-form .upload-image-box {
+        max-width: 300px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .branches .add-more-branches {
+        text-align: center;
+    }
+    .section-main-form .right-form .branches .branch-total {
+        width: 25%;
+        margin: auto;
+        margin-bottom: 15px;
+    }
+    .manage-store {
+        border-right: none;
+        margin-bottom: 30px;
+    }
+}
+
+
+/* ==========================================================================
+   Responsive CSS Portrait Mobile -- Create Store Page
+   ========================================================================== */
+
+@media only screen and (min-width: 100px) and (max-width: 479px) {
+    .section-banner .banner,
+    .section-main-form .right-form {
+        text-align: center;
+        padding: 30px 0;
+    }
+    .section-banner .banner .title {
+        font-size: 27px;
+        border-right: none;
+        padding: 0 15px;
+    }
+    .section-banner .banner .content {
+        font-size: 15px;
+        padding: 0 15px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li {
+        display: list-item;
+        padding: 5px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li a {
+        font-size: 20px;
+    }
+    .section-tab-bar .tab-bar .list-tabs li.btn-more-tag .tooltiptext {
+        display: none;
+    }
+    .section-main-form .form-title,
+    .section-main-form .form-buttons {
+        text-align: center;
+    }
+    .section-main-form .form-buttons .buttons-container {
+        padding: 17px 0;
+    }
+    .section-main-form .form-buttons .buttons-container li:nth-child(1),
+    .section-main-form .form-buttons .buttons-container li:nth-child(2) {
+        padding: 15px;
+    }
+    .section-main-form .form-buttons .buttons-container li a {
+        font-size: 16px;
+    }
+    .section-main-form .form-heading,
+    .section-main-form .main-form {
+        padding: 0;
+    }
+    .section-main-form .right-form .branches {
+        padding: 15px;
+    }
+    .section-main-form .left-form .form-title::before,
+    .section-main-form .left-form .form-title::after {
+        display: none;
+    }
+    .section-main-form .right-form .branches .branch-heading {
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 15px;
+        top: -12px;
+    }
+    .section-main-form .left-form .upload-image-box {
+        max-width: 300px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section-main-form .right-form .input-heading {
+        text-align: center;
+        padding-right: 15px;
+    }
+    .section-main-form .right-form .branches .add-more-branches {
+        text-align: center;
+    }
+    .section-main-form .right-form .branches .branch-total {
+        width: 25%;
+        margin: auto;
+        margin-bottom: 15px;
+    }
+    .manage-store {
+        border-right: none;
+        margin-bottom: 30px;
+    }
+    .profile-text {
+        padding-left: 30px;
+    }
+}

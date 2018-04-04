@@ -1,0 +1,21 @@
+.custom-image {
+	width: 70px;
+	height: 70px;
+}
+.add-new {
+	background: #00c0ef;
+	border-radius:3px 3px;
+	padding: 7px 10px; 
+	font-weight: bold;
+	margin-right: 22px;
+}
+.hover_class:hover {
+	text-decoration: underline;
+}
+.red {
+	color: red;
+}
+
+.detail-store, .detail-food {
+	font-weight: bold;
+}
