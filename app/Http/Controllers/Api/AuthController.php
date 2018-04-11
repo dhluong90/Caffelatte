@@ -28,14 +28,10 @@ class AuthController extends Controller
 
     }
 
-    public function facebook(Request $request) {
+    public function login(Request $request) {
         $facebook_token = $request->input('facebook_token');
-        $gender = $request->input('gender');
-        $chat_id = $request->input('chat_id');
-        $country = $request->input('country');
-        $city = $request->input('city');
 
-        if (!$facebook_token || !$gender || !$chat_id || !$country || !$city) {
+        if (!$facebook_token) {
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.param_wrong'),
@@ -91,7 +87,7 @@ class AuthController extends Controller
         $user = UserQModel::get_user_by_facebook_id($profile['id']);
 
         if ($user) {
-            // signin
+            // login
             $jwt = [
                 'id' => $user->id,
                 'exp' => time() + config('constant.jwt.token_expire')
@@ -99,8 +95,12 @@ class AuthController extends Controller
             $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
             UserCModel::update_user($user->id, [
                 'token' => $token,
+                'facebook_token' => $facebook_token,
+                '_friend' => json_encode($friends),
                 'login_at' => date('Y-m-d H:i:s')
             ]);
+
+            $user = UserQModel::get_user_by_facebook_id($profile['id']);
 
             return ApiHelper::success($user);
         } else {
@@ -110,10 +110,6 @@ class AuthController extends Controller
                     'name' => $profile['name'],
                     'facebook_id' => $profile['id'],
                     'facebook_token' => $facebook_token,
-                    'gender' => $gender,
-                    'chat_id' => $chat_id,
-                    'country' => $country,
-                    'city' => $city,
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
                     'created_at' => date('Y-m-d H:i:s')

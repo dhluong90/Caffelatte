@@ -35,7 +35,9 @@ return [
             'facebook_token_wrong' => 705,
             'get_profile_error' => 706,
             'param_wrong' => 708,
-            'get_friend_facebook_failed' => 709
+            'get_friend_facebook_failed' => 709,
+            'token_expired' => 710,
+            'token_wrong' => 711,
         ]
     ],
 ];

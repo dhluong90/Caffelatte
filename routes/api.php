@@ -29,7 +29,14 @@ Route::group(['prefix' => 'v1','middleware' => 'auth:api'], function () {
 // });
 
 Route::group(['prefix' => 'auth'], function () {
-    Route::post('/login', 'Api\AuthController@facebook');
+    Route::post('/login', 'Api\AuthController@login');
+});
+
+Route::group(['prefix' => 'user'], function () {
+    Route::group(['middleware' => 'api.token'], function () {
+        Route::put('/update', 'Api\UserController@update');
+        Route::get('/suggest', 'Api\UserController@suggest');
+    });
 });
 
 Route::group(['prefix' => 'food'], function () {

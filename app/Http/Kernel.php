@@ -60,5 +60,6 @@ class Kernel extends HttpKernel
         'super_admin' => \App\Http\Middleware\SuperAdmin::class,
         'store_manager' => \App\Http\Middleware\StoreManager::class,
         'profile_manager' => \App\Http\Middleware\ProfileManager::class,
+        'api.token' => \App\Http\Middleware\ApiToken::class,
     ];
 }
