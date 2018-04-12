@@ -20,7 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('password')->nullable()->default(null);
             $table->text('image')->nullable()->default(null);
             $table->string('phone')->nullable()->default(null);
-            $table->tinyInteger('gender')->default(0); // name: 1, nữ: 0
+            $table->tinyInteger('gender')->nullable()->default(null); // name: 1, nữ: 0
             $table->text('token')->nullable()->default(null);
             $table->text('fcm_token')->nullable()->default(null);
             $table->text('facebook_token')->nullable()->default(null);
