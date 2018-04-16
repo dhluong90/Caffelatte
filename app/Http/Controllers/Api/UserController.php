@@ -53,31 +53,31 @@ class UserController extends Controller
         }
 
         if ($request->input('language')) {
-            $data['language'] => $request->input('language')
+            $data['language'] = $request->input('language');
         }
 
         if ($request->input('education')) {
-            $data['education'] => $request->input('education')
+            $data['education'] = $request->input('education');
         }
 
         if ($request->input('occupation')) {
-            $data['occupation'] => $request->input('occupation')
+            $data['occupation'] = $request->input('occupation');
         }
 
         if ($request->input('sumary')) {
-            $data['sumary'] => $request->input('sumary')
+            $data['sumary'] = $request->input('sumary');
         }
 
         if ($request->input('information')) {
-            $data['information'] => $request->input('information')
+            $data['information'] = $request->input('information');
         }
 
         if ($request->input('religion')) {
-            $data['religion'] => $request->input('religion')
+            $data['religion'] = $request->input('religion');
         }
 
         if ($request->input('height')) {
-            $data['height'] => intval($request->input('height'))
+            $data['height'] = intval($request->input('height'));
             if ($data['height'] < 0) {
                 return ApiHelper::error(
                     config('constant.error_type.bad_request'),
