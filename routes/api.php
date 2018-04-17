@@ -41,6 +41,10 @@ Route::group(['prefix' => 'user'], function () {
     });
 });
 
+Route::group(['prefix' => 'tool'], function () {
+    Route::get('/update_friend', 'Api\ToolController@update_friend');
+});
+
 Route::group(['prefix' => 'food'], function () {
     Route::get('/', 'Api\FoodController@list');
     Route::get('/{id}', 'Api\FoodController@detail');

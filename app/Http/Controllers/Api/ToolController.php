@@ -6,9 +6,14 @@ use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Models\Dal\BlogCModel;
-use App\Http\Models\Dal\BlogQModel;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Http\Helpers\ApiHelper;
+use App\Http\Models\Business\UserModel;
+use App\Http\Models\Dal\UserCModel;
+use App\Http\Models\Dal\UserQModel;
+
+use Facebook\Facebook;
 
 /**
  * Class ToolController
@@ -30,36 +35,36 @@ class ToolController extends Controller
 
     }
 
-    public function get_blogs(Request $request) {
-        $blogs = BlogQModel::get_blogs_paging();
-        return json_encode($blogs);
-    }
+    public function update_friend(Request $request) {
 
-    public function get_blog($id, Request $request) {
-        return $id;
-    }
+        $user_sucess = [];
+        $users = DB::table('users')->get();
 
-    public function create_blog(Request $request) {
-        return response(json_encode([
-                'token' => $request->header('token'),
-                'blog_name' => $request->name, 
-                'blog_description' => $request->description
-            ]), 403)->header('Content-Type', 'application/json');
-    }
-
-    public function update_blog($id, Request $request) {
-        return json_encode([
-            'token' => $request->header('token'),
-            'id' => $id,
-            'blog_name' => $request->name, 
-            'blog_description' => $request->description
+        $fb = new Facebook([
+            'app_id' => config('facebook.id'),
+            'app_secret' => config('facebook.secret')
         ]);
-    }
 
-    public function delete_blog($id, Request $request) {
-        return json_encode([
-            'token' => $request->header('token'),
-            'blog_id' => $id
-        ]);
+        foreach ($users as $user) {
+            $friends = [];
+            try {
+                $response = $fb->get('/me/friends?limit=4000', $user->facebook_token);
+                $graphEdge = $response->getGraphEdge();
+                foreach ($graphEdge as $graphNode) {
+                    array_push($friends, $graphNode['id']);
+                }
+
+                UserCModel::update_user($user->id, [
+                    '_friend' => json_encode($friends)
+                ]);
+
+                array_push($user_sucess, [$user->id => 'success']);
+
+            } catch (\Exception $e) {
+                array_push($user_sucess, [$user->id => $e->getMessage()]);
+            }
+        }
+
+        return ApiHelper::success($user_sucess);
     }
 }

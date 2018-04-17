@@ -1,20 +1,20 @@
 <?php
 namespace app\Http\Controllers\Api;
 
-use Facebook\Facebook;
-use App\SocialNetwork;
 use App\User;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
+use App\Http\Models\Business\UserModel;
+use App\Http\Models\Dal\UserCModel;
+use App\Http\Models\Dal\UserQModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+
 use \Firebase\JWT\JWT;
-use App\Http\Models\Business\UserModel;
-use App\Http\Models\Dal\UserCModel;
-use App\Http\Models\Dal\UserQModel;
+use Facebook\Facebook;
 
 class AuthController extends Controller
 {
