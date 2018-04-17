@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Helpers\ApiHelper;
 use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\UserCModel;
 use App\Http\Models\Dal\UserQModel;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use \Firebase\JWT\JWT;
+
 
 /**
  * Class UserController
@@ -31,6 +33,20 @@ class UserController extends Controller
 
     public function index() {
 
+    }
+
+    public function profile(Request $request, $id) {
+        $user = UserQModel::get_user_by_id($id);
+
+        if (!$user) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user id not found',
+                404
+            );
+        }
+
+        return ApiHelper::success($user);
     }
 
     public function update(Request $request) {
@@ -112,6 +128,24 @@ class UserController extends Controller
     }
 
     public function suggest(Request $request) {
+        $suggests = [];
+
+        $user_id = $request->input('user_id');
+        $user = UserQModel::get_user_by_id($user_id);
+        $friends = $user->_friend ? json_decode($user->_friend) : [];
+        $suggested = $user->_suggested ? json_decode($user->_suggested) : [];
+        $cancelled = $user->_cancelled ? json_decode($user->_cancelled) : [];
+
+        // get list friend of this person
+        $suggests = DB::table('users')
+                ->select('*')
+                ->limit(5)
+                ->get();
+
+        return ApiHelper::success($suggests);
+    }
+
+    public function suggest2(Request $request) {
         $suggests = [];
 
         $user_id = $request->input('user_id');

@@ -50,14 +50,9 @@ class UserQModel extends Model
      * returns false if no products is founded
      */
     public static function get_user_by_id($user_id) {
-        $result = DB::table(Constants::USERS)
+        return DB::table(Constants::USERS)
                 ->where('id', '=', $user_id)
-                ->get();
-
-        if (empty($result[0])) {
-            return FALSE;
-        }
-        return $result[0];
+                ->first();
     }
 
     /**
