@@ -52,6 +52,42 @@ class UserController extends Controller
             $data['city'] = $request->input('city');
         }
 
+        if ($request->input('language')) {
+            $data['language'] = $request->input('language');
+        }
+
+        if ($request->input('education')) {
+            $data['education'] = $request->input('education');
+        }
+
+        if ($request->input('occupation')) {
+            $data['occupation'] = $request->input('occupation');
+        }
+
+        if ($request->input('sumary')) {
+            $data['sumary'] = $request->input('sumary');
+        }
+
+        if ($request->input('information')) {
+            $data['information'] = $request->input('information');
+        }
+
+        if ($request->input('religion')) {
+            $data['religion'] = $request->input('religion');
+        }
+
+        if ($request->input('height')) {
+            $data['height'] = intval($request->input('height'));
+            if ($data['height'] < 0) {
+                return ApiHelper::error(
+                    config('constant.error_type.bad_request'),
+                    config('constant.error_code.auth.param_wrong'),
+                    'param height wrong',
+                    400
+                );
+            } 
+        }
+
         if (empty($data)) {
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),
