@@ -67,4 +67,16 @@ class ToolController extends Controller
 
         return ApiHelper::success($user_sucess);
     }
+
+    public function update_image(Request $request) {
+        $user_sucess = [];
+        $users = DB::table('users')->get();
+        foreach ($users as $user) {
+            UserCModel::update_user($user->id, [
+                'image' => json_encode(['https://graph.facebook.com/'.$user->facebook_id.'/picture?type=large&width=720&height=720'])
+            ]);
+            array_push($user_sucess, [$user->id => 'success']);
+        }
+        return ApiHelper::success($user_sucess);
+    }
 }
