@@ -108,6 +108,7 @@ class AuthController extends Controller
             try {
                 $data = [
                     'name' => $profile['name'],
+                    'image' => json_encode(['https://graph.facebook.com/'.$profile['id'].'/picture?type=large&width=720&height=720']),
                     'facebook_id' => $profile['id'],
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),

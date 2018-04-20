@@ -92,6 +92,10 @@ class UserController extends Controller
             $data['religion'] = $request->input('religion');
         }
 
+        if ($request->input('fcm_token')) {
+            $data['fcm_token'] = $request->input('fcm_token');
+        }
+
         if ($request->input('height')) {
             $data['height'] = intval($request->input('height'));
             if ($data['height'] < 0) {
@@ -134,56 +138,46 @@ class UserController extends Controller
         $user = UserQModel::get_user_by_id($user_id);
         $friends = $user->_friend ? json_decode($user->_friend) : [];
         $suggested = $user->_suggested ? json_decode($user->_suggested) : [];
-        $cancelled = $user->_cancelled ? json_decode($user->_cancelled) : [];
+        $cancelled = $user->_passed ? json_decode($user->_passed) : [];
 
-        // get list friend of this person
-        $suggests = DB::table('users')
-                ->select('*')
-                ->limit(5)
-                ->get();
+        if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', time())) {
+            // get user in field suggested
+        } else {
+            // logic suggest
+            while (count($friends) > 0 && count($suggests) < 3) {
+                // get random 1 friend of friends
+                $index = array_rand($friends);
+                $person_facebook_id = $friends[$index];
+                unset($friends[$index]); // remove this friend
 
-        return ApiHelper::success($suggests);
-    }
+                // get list friend of this person
+                $person = UserQModel::get_user_by_facebook_id($person_facebook_id);
+                if ($person) {
+                    $person_friends = $person->_friend ? json_decode($person->_friend) : [];
 
-    public function suggest2(Request $request) {
-        $suggests = [];
+                    $suggests_id = [];
+                    foreach ($suggests as $item) {
+                        array_push($suggests_id, $item->id);
+                    }
 
-        $user_id = $request->input('user_id');
-        $user = UserQModel::get_user_by_id($user_id);
-        $friends = $user->_friend ? json_decode($user->_friend) : [];
-        $suggested = $user->_suggested ? json_decode($user->_suggested) : [];
-        $cancelled = $user->_cancelled ? json_decode($user->_cancelled) : [];
+                    $result = DB::table('users')
+                        ->select('*')
+                        ->where('id', '!=', $user_id)
+                        ->whereIn('facebook_id', $person_friends)
+                        ->whereNotIn('id', $suggests_id)
+                        ->limit(3)
+                        ->get()
+                        ->toArray();
 
-        // get random 1 friend of friends
-        $index = array_rand($friends);
-        $person_facebook_id = $friends[$index];
-        unset($friends[$index]); // remove this friend
-
-        // get list friend of this person
-        $person = UserQModel::get_user_by_facebook_id($person_facebook_id);
-        if ($person) {
-            $person_friends = $person->_friend ? json_decode($person->_friend) : [];
-
-            $result = DB::table('users')
-                ->select('id', 'name', 'image', 'phone', 'gender', 'chat_id', 'country', 'address', 'city')
-                ->whereIn('facebook_id', $person_friends)
-                ->whereNotIn('id', array_merge($suggested, $cancelled))
-                ->get();
+                    foreach ($result as $item) {
+                        if (count($suggests) < 3) {
+                            array_push($suggests, $item);
+                        }
+                    }
+                }
+            }
         }
 
         return ApiHelper::success($suggests);
-    }
-
-    function get_mutual_friend($user, $person) {
-        // get list friend of this person
-        $person = UserQModel::get_user_by_facebook_id($person_facebook_id);
-        $person_friends = json_decode($person->_friend);
-
-        $suggests = DB::table('users')
-            ->select('id', 'name', 'image', 'phone', 'gender', 'chat_id', 'country', 'address', 'city')
-            ->whereIn('facebook_id', $person_friends)
-            ->whereNotIn('id', array_merge($suggested, $cancelled))
-            ->get();
-        return $suggests;
     }
 }

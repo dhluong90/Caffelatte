@@ -9,6 +9,7 @@
         "acacha/admin-lte-template-laravel": "4.*",
         "barryvdh/laravel-debugbar": "^2.3",
         "cornford/googlmapper": "2.*",
+        "doctrine/dbal": "^2.7",
         "facebook/graph-sdk": "^5.6",
         "firebase/php-jwt": "^5.0",
         "intervention/image": "^2.3",
