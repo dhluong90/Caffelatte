@@ -8,6 +8,8 @@ use App\Http\Helpers\ApiHelper;
 use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\UserCModel;
 use App\Http\Models\Dal\UserQModel;
+use App\Http\Models\Dal\SuggestCModel;
+use App\Http\Models\Dal\SuggestQModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -132,23 +134,45 @@ class UserController extends Controller
     }
 
     public function suggest(Request $request) {
+        $current_time = time();
+        // test
+        if ($request->input('time')) {
+            $current_time = strtotime($request->input('time'));
+        }
+
         $suggests = [];
 
         $user_id = $request->input('user_id');
         $user = UserQModel::get_user_by_id($user_id);
-        $friends = $user->_friend ? json_decode($user->_friend) : [];
-        $suggested = $user->_suggested ? json_decode($user->_suggested) : [];
-        $cancelled = $user->_passed ? json_decode($user->_passed) : [];
 
-        if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', time())) {
+        // get friend from table user
+        $friends = $user->_friend ? json_decode($user->_friend) : [];
+        $friends_temp = $friends;
+
+        // get all user matching from table suggest
+        $suggested = SuggestQModel::get_list_matching($user_id);
+
+        if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
+            $result = DB::table('users as u')
+                ->select('u.*')
+                ->join('suggests as s', 's.matching_id', '=', 'u.id')
+                ->where('s.user_id', '=', $user_id)
+                ->where('s.created_at', '=', $user->suggest_at)
+                ->whereIn('s.status', [config('constant.suggest.status.suggested')])
+                ->get()
+                ->toArray();
+
+            return ApiHelper::success($result);
         } else {
-            // logic suggest
-            while (count($friends) > 0 && count($suggests) < 3) {
+            // remove old suggest (not like, pass)
+
+            // get new matching
+            while (count($friends_temp) > 0 && count($suggests) < 3) {
                 // get random 1 friend of friends
-                $index = array_rand($friends);
-                $person_facebook_id = $friends[$index];
-                unset($friends[$index]); // remove this friend
+                $index = array_rand($friends_temp);
+                $person_facebook_id = $friends_temp[$index];
+                unset($friends_temp[$index]); // remove this friend
 
                 // get list friend of this person
                 $person = UserQModel::get_user_by_facebook_id($person_facebook_id);
@@ -165,6 +189,8 @@ class UserController extends Controller
                         ->where('id', '!=', $user_id)
                         ->whereIn('facebook_id', $person_friends)
                         ->whereNotIn('id', $suggests_id)
+                        ->whereNotIn('facebook_id', $friends)
+                        ->whereNotIn('id', $suggested)
                         ->limit(3)
                         ->get()
                         ->toArray();
@@ -175,6 +201,30 @@ class UserController extends Controller
                         }
                     }
                 }
+            }
+
+            if (!empty($suggests)) {
+                $data = [];
+                $matching_ids = [];
+                foreach ($suggests as $item) {
+                    array_push($matching_ids, $item->id);
+                    array_push($data, [
+                        'user_id' => $user_id,
+                        'matching_id' => $item->id,
+                        'status' => config('constant.suggest.status.suggested'),
+                        'created_at' => date('Y-m-d', $current_time)
+                    ]);
+                }
+
+                // save list suggest table suggest
+                SuggestCModel::create_suggest($data);
+
+                // update cache field _suggested table user
+                UserCModel::update_user($user_id, [
+                    '_suggested' => json_encode($matching_ids),
+                    'suggest_at' => date('Y-m-d', $current_time)
+                ]);
+
             }
         }
 

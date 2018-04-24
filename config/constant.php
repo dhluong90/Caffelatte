@@ -8,6 +8,16 @@ return [
         'member' => 4,
     ],
 
+    // suggest status
+    'suggest' => [
+        'status' => [
+            'suggested' => 1,
+            'liked' => 2,
+            'passed' => 3,
+            'approved' => 4,
+        ]
+    ],
+
     'jwt' => [
         'token_expire' => 30 * 24 *3600
     ],

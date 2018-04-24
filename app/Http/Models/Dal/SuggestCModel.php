@@ -13,8 +13,8 @@ class SuggestCModel extends Model
      * @param $facebook_id
      * @return id
      */
-    public static function create($data) {
-        return DB::table('suggests')->insertGetId($data);
+    public static function create_suggest($data) {
+        return DB::table('suggests')->insert($data);
     }
 
     /**
@@ -23,7 +23,7 @@ class SuggestCModel extends Model
      * @param array data
      * @return id
      */
-    public static function update($suggest_id, $data) {
+    public static function update_suggest($suggest_id, $data) {
         return DB::table('suggests')
                 ->where('id', '=', $suggest_id)
                 ->update($data);
