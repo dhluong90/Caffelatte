@@ -15,6 +15,8 @@ class UpdateBirthDayUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('birthday')->nullable()->default(null);
+            $table->string('school')->nullable()->default(null);
+            $table->string('degree')->nullable()->default(null);
         });
     }
      /**
@@ -25,7 +27,7 @@ class UpdateBirthDayUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['birthday']);
+            $table->dropColumn(['birthday', 'school', 'degree']);
         });
     }
 }

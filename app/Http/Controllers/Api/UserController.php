@@ -98,6 +98,18 @@ class UserController extends Controller
             $data['fcm_token'] = $request->input('fcm_token');
         }
 
+        if ($request->input('birthday')) {
+            $data['birthday'] = $request->input('birthday');
+        }
+
+        if ($request->input('school')) {
+            $data['school'] = $request->input('school');
+        }
+
+        if ($request->input('degree')) {
+            $data['degree'] = $request->input('degree');
+        }
+
         if ($request->input('height')) {
             $data['height'] = intval($request->input('height'));
             if ($data['height'] < 0) {
@@ -166,6 +178,7 @@ class UserController extends Controller
             return ApiHelper::success($result);
         } else {
             // remove old suggest (not like, pass)
+            SuggestCModel::reset_suggest($user_id);
 
             // get new matching
             while (count($friends_temp) > 0 && count($suggests) < 3) {

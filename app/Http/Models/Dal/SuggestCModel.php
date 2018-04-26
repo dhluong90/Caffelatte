@@ -28,4 +28,16 @@ class SuggestCModel extends Model
                 ->where('id', '=', $suggest_id)
                 ->update($data);
     }
+
+    /**
+     * reset_suggest
+     * @param user_id int
+     * @return
+     */
+    public static function reset_suggest($user_id) {
+        return DB::table('suggests')
+                ->where('user_id', '=', $user_id)
+                ->whereIn('status', [config('constant.suggest.status.suggested')])
+                ->delete();
+    }
 }
