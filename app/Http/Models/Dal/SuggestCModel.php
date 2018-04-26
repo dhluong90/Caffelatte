@@ -19,7 +19,7 @@ class SuggestCModel extends Model
 
     /**
      * update
-     * @param user_id int
+     * @param suggest_id int
      * @param array data
      * @return id
      */
@@ -27,6 +27,17 @@ class SuggestCModel extends Model
         return DB::table('suggests')
                 ->where('id', '=', $suggest_id)
                 ->update($data);
+    }
+
+    /**
+     * delete
+     * @param suggest_id int
+     * @return id
+     */
+    public static function delete_suggest($suggest_id) {
+        return DB::table('suggests')
+                ->where('id', '=', $suggest_id)
+                ->delete();
     }
 
     /**

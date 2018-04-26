@@ -36,8 +36,9 @@ Route::group(['prefix' => 'user'], function () {
     Route::group(['middleware' => 'api.token'], function () {
         Route::put('/update', 'Api\UserController@update');
         Route::get('/suggest', 'Api\UserController@suggest');
-        Route::get('/suggest2', 'Api\UserController@suggest2');
         Route::get('/profile/{id}', 'Api\UserController@profile');
+        Route::post('/like', 'Api\UserController@like');
+        Route::post('/pass', 'Api\UserController@pass');
     });
 });
 

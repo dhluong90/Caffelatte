@@ -145,6 +145,91 @@ class UserController extends Controller
         return ApiHelper::success(['message' => 'success']);
     }
 
+    public function like(Request $request) {
+        $user_id = $request->input('user_id');
+        $matching_id = $request->input('matching_id');
+
+        // check user matching
+        $user_matching = UserQModel::get_user_by_id($matching_id);
+        if (!$user_matching) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user matching id not found',
+                404
+            );
+        }
+
+        // case 1: user matching is suggested by current user
+        $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
+
+        // case 2: check matching_id is liked current user
+        $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.liked'));
+
+        if (!$suggested_item && !$liked_item) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user matching can not like',
+                404
+            );
+        }
+
+        if ($liked_item) {
+            SuggestCModel::update_suggest($liked_item->id, [
+                'status' => config('constant.suggest.status.approved'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+
+            // delete suggest if excess record
+            if ($suggested_item) {
+                SuggestCModel::delete_suggest($suggested_item->id);
+            }
+
+            // todo realtime
+
+            return ApiHelper::success(['message' => 'success']);
+        } else {
+            SuggestCModel::update_suggest($suggested_item->id, [
+                'status' => config('constant.suggest.status.liked'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+
+            return ApiHelper::success(['message' => 'success']);
+        }
+    }
+
+    public function pass(Request $request) {
+        $user_id = $request->input('user_id');
+        $matching_id = $request->input('matching_id');
+
+        // check user matching
+        $user_matching = UserQModel::get_user_by_id($matching_id);
+        if (!$user_matching) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user matching id not found',
+                404
+            );
+        }
+
+        // case 1: user matching is suggested by current user
+        $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
+
+        if (!$suggested_item) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user matching can not pass',
+                404
+            );
+        }
+
+        SuggestCModel::update_suggest($suggested_item->id, [
+            'status' => config('constant.suggest.status.passed'),
+            'updated_at' => date('Y-m-d', time())
+        ]);
+
+        return ApiHelper::success(['message' => 'success']);
+    }
+
     public function suggest(Request $request) {
         $current_time = time();
         // test
@@ -162,18 +247,11 @@ class UserController extends Controller
         $friends_temp = $friends;
 
         // get all user matching from table suggest
-        $suggested = SuggestQModel::get_list_matching($user_id);
+        $user_matching_ids = SuggestQModel::get_list_matching($user_id);
 
         if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
-            $result = DB::table('users as u')
-                ->select('u.*')
-                ->join('suggests as s', 's.matching_id', '=', 'u.id')
-                ->where('s.user_id', '=', $user_id)
-                ->where('s.created_at', '=', $user->suggest_at)
-                ->whereIn('s.status', [config('constant.suggest.status.suggested')])
-                ->get()
-                ->toArray();
+            $result = SuggestQModel::get_list_user_by_status($user_id, [config('constant.suggest.status.suggested')], $user->suggest_at);
 
             return ApiHelper::success($result);
         } else {
@@ -203,7 +281,7 @@ class UserController extends Controller
                         ->whereIn('facebook_id', $person_friends)
                         ->whereNotIn('id', $suggests_id)
                         ->whereNotIn('facebook_id', $friends)
-                        ->whereNotIn('id', $suggested)
+                        ->whereNotIn('id', $user_matching_ids)
                         ->limit(3)
                         ->get()
                         ->toArray();
