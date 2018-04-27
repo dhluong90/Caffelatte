@@ -114,6 +114,10 @@ class UserController extends Controller
             $data['employer'] = $request->input('employer');
         }
 
+        if ($request->input('ethnicity')) {
+            $data['ethnicity'] = $request->input('ethnicity');
+        }
+
         if ($request->input('height')) {
             $data['height'] = intval($request->input('height'));
             if ($data['height'] < 0) {
