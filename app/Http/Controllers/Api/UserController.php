@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
+use App\Http\Helpers\NotificationHelper;
 use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\UserCModel;
 use App\Http\Models\Dal\UserQModel;
@@ -167,6 +168,9 @@ class UserController extends Controller
             );
         }
 
+        // get current
+        $user_current = UserQModel::get_user_by_id($user_id);
+
         // case 1: user matching is suggested by current user
         $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
 
@@ -193,6 +197,14 @@ class UserController extends Controller
             }
 
             // todo realtime
+            if ($user_current->fcm_token) {
+                $result = NotificationHelper::send($user_matching->fcm_token, [
+                        'title' => 'Cafelatte',
+                        'body' => $user_current->name . ' like you'
+                    ], [
+                        'chat_id' => $user_current->chat_id
+                    ]);
+            }
 
             return ApiHelper::success(['message' => 'success']);
         } else {
@@ -250,24 +262,30 @@ class UserController extends Controller
         $user_id = $request->input('user_id');
         $user = UserQModel::get_user_by_id($user_id);
 
-        // get friend from table user
-        $friends = $user->_friend ? json_decode($user->_friend) : [];
-        $friends_temp = $friends;
-
-        // get all user matching from table suggest
-        $user_matching_ids = SuggestQModel::get_list_matching($user_id);
-
         if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
-            $result = SuggestQModel::get_list_user_by_status($user_id, [config('constant.suggest.status.suggested')], $user->suggest_at);
+            $result = SuggestQModel::get_current_suggest($user_id, json_decode($user->_suggested), $user->suggest_at, config('constant.suggest.limit'));
 
             return ApiHelper::success($result);
         } else {
+            // get friend from table user
+            $friends = $user->_friend ? json_decode($user->_friend) : [];
+            $friends_temp = $friends;
+
+            // get all user matching from table suggest
+            $user_matching_ids = SuggestQModel::get_list_matching($user_id);
+
             // remove old suggest (not like, pass)
             SuggestCModel::reset_suggest($user_id);
 
+            // get user like me to suggest
+            $users_like_me = SuggestQModel::get_users_like_me($user_id, config('constant.suggest.limit'));
+            foreach ($users_like_me as $item) {
+                array_push($suggests, $item);
+            }
+
             // get new matching
-            while (count($friends_temp) > 0 && count($suggests) < 3) {
+            while (count($friends_temp) > 0 && count($suggests) < config('constant.suggest.limit')) {
                 // get random 1 friend of friends
                 $index = array_rand($friends_temp);
                 $person_facebook_id = $friends_temp[$index];
@@ -290,12 +308,12 @@ class UserController extends Controller
                         ->whereNotIn('id', $suggests_id)
                         ->whereNotIn('facebook_id', $friends)
                         ->whereNotIn('id', $user_matching_ids)
-                        ->limit(3)
+                        ->limit(config('constant.suggest.limit'))
                         ->get()
                         ->toArray();
 
                     foreach ($result as $item) {
-                        if (count($suggests) < 3) {
+                        if (count($suggests) < config('constant.suggest.limit')) {
                             array_push($suggests, $item);
                         }
                     }
@@ -307,23 +325,28 @@ class UserController extends Controller
                 $matching_ids = [];
                 foreach ($suggests as $item) {
                     array_push($matching_ids, $item->id);
-                    array_push($data, [
-                        'user_id' => $user_id,
-                        'matching_id' => $item->id,
-                        'status' => config('constant.suggest.status.suggested'),
-                        'created_at' => date('Y-m-d', $current_time)
-                    ]);
+
+                    // if new suggest
+                    if (empty($item->status)) {
+                        array_push($data, [
+                            'user_id' => $user_id,
+                            'matching_id' => $item->id,
+                            'status' => config('constant.suggest.status.suggested'),
+                            'created_at' => date('Y-m-d', $current_time)
+                        ]);
+                    }
                 }
 
-                // save list suggest table suggest
-                SuggestCModel::create_suggest($data);
+                // save list suggest table suggest (get list suggest not like me)
+                if (!empty($data)) {
+                    SuggestCModel::create_suggest($data);
+                }
 
                 // update cache field _suggested table user
                 UserCModel::update_user($user_id, [
                     '_suggested' => json_encode($matching_ids),
                     'suggest_at' => date('Y-m-d', $current_time)
                 ]);
-
             }
         }
 

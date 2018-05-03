@@ -41,7 +41,7 @@ class SuggestQModel extends Model
      * @param $suggest_at
      * @return user
      */
-    public static function get_list_user_by_status($user_id, $status, $suggest_at = null) {
+    public static function get_users_by_status($user_id, $status, $suggest_at = null) {
         $query = DB::table('users as u')
                 ->select('u.*')
                 ->join('suggests as s', 's.matching_id', '=', 'u.id')
@@ -53,6 +53,69 @@ class SuggestQModel extends Model
         }
 
         return $query->get();
+    }
+
+    /**
+     * get_list_user_by_status
+     * @param $user_id
+     * @return user
+     */
+    public static function get_users_like_me($user_id, $limit = null) {
+        $query = DB::table('users as u')
+                ->select('u.*', 's.status')
+                ->join('suggests as s', 's.user_id', '=', 'u.id')
+                ->where('s.matching_id', '=', $user_id)
+                ->where('s.status', '=', config('constant.suggest.status.liked'));
+
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * get_current_suggest
+     * @param $user_id
+     * @param $status array
+     * @param $suggest_at
+     * @return user
+     */
+    public static function get_current_suggest($user_id, $suggest_list, $suggest_at, $limit) {
+        $suggests = [];
+
+        // get user like me in $suggest_list
+        $users_like_me = DB::table('users as u')
+                ->select('u.*', 's.status')
+                ->join('suggests as s', 's.user_id', '=', 'u.id')
+                ->where('s.matching_id', '=', $user_id)
+                ->where('s.status', '=', config('constant.suggest.status.liked'))
+                ->whereIn('u.id', $suggest_list)
+                ->limit($limit)
+                ->get();
+
+        foreach ($users_like_me as $item) {
+            array_push($suggests, $item);
+        }
+
+        if (count($suggests) < $limit) {
+            // get suggest me today
+            $users_suggest_me = DB::table('users as u')
+                    ->select('u.*', 's.status')
+                    ->join('suggests as s', 's.matching_id', '=', 'u.id')
+                    ->where('s.user_id', '=', $user_id)
+                    ->where('s.status', '=', config('constant.suggest.status.suggested'))
+                    ->where('s.created_at', '=', $suggest_at)
+                    ->whereIn('u.id', $suggest_list)
+                    ->limit($limit - count($suggests))
+                    ->get();
+
+            foreach ($users_suggest_me as $item) {
+                array_push($suggests, $item);
+            }
+        }
+
+        return $suggests;
     }
 
     /**

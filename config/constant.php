@@ -15,7 +15,8 @@ return [
             'liked' => 2,
             'passed' => 3,
             'approved' => 4,
-        ]
+        ],
+        'limit' => 3
     ],
 
     'jwt' => [

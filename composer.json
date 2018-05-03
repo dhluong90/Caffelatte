@@ -12,6 +12,7 @@
         "doctrine/dbal": "^2.5.13",
         "facebook/graph-sdk": "^5.6",
         "firebase/php-jwt": "^5.0",
+        "guzzlehttp/guzzle": "^6.3",
         "intervention/image": "^2.3",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0"
