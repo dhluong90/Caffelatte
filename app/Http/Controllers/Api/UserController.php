@@ -272,9 +272,6 @@ class UserController extends Controller
             $friends = $user->_friend ? json_decode($user->_friend) : [];
             $friends_temp = $friends;
 
-            // get all user matching from table suggest
-            $user_matching_ids = SuggestQModel::get_list_matching($user_id);
-
             // remove old suggest (not like, pass)
             SuggestCModel::reset_suggest($user_id);
 
@@ -296,21 +293,7 @@ class UserController extends Controller
                 if ($person) {
                     $person_friends = $person->_friend ? json_decode($person->_friend) : [];
 
-                    $suggests_id = [];
-                    foreach ($suggests as $item) {
-                        array_push($suggests_id, $item->id);
-                    }
-
-                    $result = DB::table('users')
-                        ->select('*')
-                        ->where('id', '!=', $user_id)
-                        ->whereIn('facebook_id', $person_friends)
-                        ->whereNotIn('id', $suggests_id)
-                        ->whereNotIn('facebook_id', $friends)
-                        ->whereNotIn('id', $user_matching_ids)
-                        ->limit(config('constant.suggest.limit'))
-                        ->get()
-                        ->toArray();
+                    $result = SuggestQModel::get_new_suggest($user, $person_friends, $suggests);
 
                     foreach ($result as $item) {
                         if (count($suggests) < config('constant.suggest.limit')) {
@@ -351,5 +334,16 @@ class UserController extends Controller
         }
 
         return ApiHelper::success($suggests);
+    }
+
+    public function manual_friend(Request $request, $id) {
+        $user_id = $request->input('user_id');
+        $user = UserQModel::get_user_by_id($user_id);
+        $my_friend = UserQModel::get_user_by_id($id);
+
+        $manual_friends = array_intersect(json_decode($user->_friend), json_decode($my_friend->_friend));
+        $result = UserQModel::get_users_by_facebooks($manual_friends);
+
+        return ApiHelper::success($result);
     }
 }

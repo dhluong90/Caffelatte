@@ -119,6 +119,37 @@ class SuggestQModel extends Model
     }
 
     /**
+     * get_new_suggest
+     * @param $user object
+     * @param $person_friends array
+     * @param $suggests array
+     * @return user
+     */
+    public static function get_new_suggest($user, $person_friends, $suggests) {
+        $friends = $user->_friend ? json_decode($user->_friend) : [];
+
+        // get all user matching from table suggest
+        $user_matching_ids = self::get_list_matching($user->id);
+
+        $suggested_ids = [];
+        foreach ($suggests as $item) {
+            array_push($suggested_ids, $item->id);
+        }
+
+        return DB::table('users')
+            ->select('*')
+            ->where('id', '!=', $user->id)
+            ->where('gender', '!=', $user->gender)
+            ->where('country', '!=', $user->country)
+            ->whereIn('facebook_id', $person_friends)
+            ->whereNotIn('id', $suggested_ids)
+            ->whereNotIn('facebook_id', $friends)
+            ->whereNotIn('id', $user_matching_ids)
+            ->limit(config('constant.suggest.limit') - count($suggests))
+            ->get();
+    }
+
+    /**
      * get_record_by_status
      * @param $user_id
      * @param $matching_id

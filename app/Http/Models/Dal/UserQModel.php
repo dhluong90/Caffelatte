@@ -22,6 +22,18 @@ class UserQModel extends Model
     }
 
     /**
+     * get_users_by_facebooks
+     * @param $facebooks array
+     * @return user
+     */
+    public static function get_users_by_facebooks($facebooks) {
+        return DB::table('users')
+            ->select('*')
+            ->whereIn('facebook_id', $facebooks)
+            ->get();
+    }
+
+    /**
      * get_user_by_token
      * @param $facebook_id
      * @return user
