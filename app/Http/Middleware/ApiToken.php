@@ -30,7 +30,7 @@ class ApiToken
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.token_wrong'),
                 'token wrong',
-                400
+                401
             );
         }
 
@@ -40,7 +40,7 @@ class ApiToken
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.token_expired'),
                 'token expired',
-                400
+                401
             );
         }
 
@@ -50,7 +50,7 @@ class ApiToken
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.token_wrong'),
                 'token wrong',
-                400
+                401
             );
         }
 
