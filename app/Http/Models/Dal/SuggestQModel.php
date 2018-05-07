@@ -139,7 +139,7 @@ class SuggestQModel extends Model
         $result = DB::table('users')
             ->select('*')
             ->where('id', '!=', $user->id)
-            ->where(function($query) {
+            ->where(function($query) use ($user) {
                 $query->where('gender', '!=', $user->gender)
                 ->orWhere('gender', '=', null);
             })
