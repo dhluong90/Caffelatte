@@ -206,14 +206,14 @@ class UserController extends Controller
                     ]);
             }
 
-            return ApiHelper::success(['message' => 'success']);
+            return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
         } else {
             SuggestCModel::update_suggest($suggested_item->id, [
                 'status' => config('constant.suggest.status.liked'),
                 'updated_at' => date('Y-m-d', time())
             ]);
 
-            return ApiHelper::success(['message' => 'success']);
+            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
         }
     }
 
