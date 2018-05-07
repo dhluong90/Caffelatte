@@ -140,7 +140,7 @@ class SuggestQModel extends Model
             ->select('*')
             ->where('id', '!=', $user->id)
             ->where(function($query) {
-                $query->where('gender', '!=', 1)
+                $query->where('gender', '!=', $user->gender)
                 ->orWhere('gender', '=', null);
             })
             ->where('country', '=', $user->country)
