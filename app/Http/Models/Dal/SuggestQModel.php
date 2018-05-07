@@ -136,10 +136,13 @@ class SuggestQModel extends Model
             array_push($suggested_ids, $item->id);
         }
 
-        return DB::table('users')
+        $result = DB::table('users')
             ->select('*')
             ->where('id', '!=', $user->id)
-            ->where('gender', '!=', $user->gender)
+            ->where(function($query) {
+                $query->where('gender', '!=', 1)
+                ->orWhere('gender', '=', null);
+            })
             ->where('country', '=', $user->country)
             ->whereIn('facebook_id', $person_friends)
             ->whereNotIn('id', $suggested_ids)
@@ -147,6 +150,8 @@ class SuggestQModel extends Model
             ->whereNotIn('id', $user_matching_ids)
             ->limit(config('constant.suggest.limit') - count($suggests))
             ->get();
+
+        return $result;
     }
 
     /**
