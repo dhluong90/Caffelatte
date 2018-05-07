@@ -140,7 +140,7 @@ class SuggestQModel extends Model
             ->select('*')
             ->where('id', '!=', $user->id)
             ->where('gender', '!=', $user->gender)
-            ->where('country', '!=', $user->country)
+            ->where('country', '=', $user->country)
             ->whereIn('facebook_id', $person_friends)
             ->whereNotIn('id', $suggested_ids)
             ->whereNotIn('facebook_id', $friends)
