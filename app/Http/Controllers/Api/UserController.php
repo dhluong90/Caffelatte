@@ -235,7 +235,7 @@ class UserController extends Controller
         $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
 
         // case 2: matching_id is liked current user
-        $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.suggested'));
+        $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.liked'));
 
         if (!$suggested_item && !$liked_item) {
             return ApiHelper::error(
