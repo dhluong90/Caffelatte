@@ -234,7 +234,10 @@ class UserController extends Controller
         // case 1: user matching is suggested by current user
         $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
 
-        if (!$suggested_item) {
+        // case 2: matching_id is liked current user
+        $liked_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
+
+        if (!$suggested_item && !$liked_item) {
             return ApiHelper::error(
                 config('constant.error_type.not_found'), 404,
                 'user matching can not pass',
@@ -242,12 +245,25 @@ class UserController extends Controller
             );
         }
 
-        SuggestCModel::update_suggest($suggested_item->id, [
-            'status' => config('constant.suggest.status.passed'),
-            'updated_at' => date('Y-m-d', time())
-        ]);
+        if ($suggested_item) {
+            SuggestCModel::update_suggest($suggested_item->id, [
+                'status' => config('constant.suggest.status.passed'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
 
-        return ApiHelper::success(['message' => 'success']);
+            return ApiHelper::success(['message' => 'success']);
+        }
+
+        if ($liked_item) {
+            SuggestCModel::update_suggest($liked_item->id, [
+                'status' => config('constant.suggest.status.passed'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+
+            return ApiHelper::success(['message' => 'success']);
+        }
+
+        return ApiHelper::error();
     }
 
     public function suggest(Request $request) {
