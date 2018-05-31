@@ -206,7 +206,9 @@ class UserController extends Controller
                         'title' => 'Cafelatte',
                         'body' => $user_current->name . ' like you'
                     ], [
-                        'chat_id' => $user_current->chat_id
+                        'chat_id' => $user_current->chat_id,
+                        'matching_chat_id' => $user_matching->chat_id,
+                        'type' => 'like'
                     ]);
             }
 
