@@ -376,10 +376,12 @@ class UserController extends Controller
 
         $title = $request->input('title');
         $body = $request->input('body');
+        $data = $request->input('data');
         $result = NotificationHelper::send($user_matching->fcm_token, [
                 'title' => $title,
-                'body' => $body
-            ], []);
+                'body' => $body,
+                'sound' => 'default'
+            ], $data);
         return ApiHelper::success(['message' => 'success']);
     }
 }

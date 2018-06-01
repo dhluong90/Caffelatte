@@ -52,7 +52,7 @@ Class NotificationHelper {
                     'body' => json_encode([
                         'to' => $fcm_token,
                         'notification' => $notification,
-                        'data' => $data
+                        'data' => (object)$data
                     ])
                 ]);
 
