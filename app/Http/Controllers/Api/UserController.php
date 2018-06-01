@@ -368,4 +368,18 @@ class UserController extends Controller
 
         return ApiHelper::success($result);
     }
+
+    public function push_user(Request $request, $matching_id) {
+        $user_id = $request->input('user_id');
+        $user = UserQModel::get_user_by_id($user_id);
+        $user_matching = UserQModel::get_user_by_id($matching_id);
+
+        $title = $request->input('title');
+        $body = $request->input('body');
+        $result = NotificationHelper::send($user_matching->fcm_token, [
+                'title' => $title,
+                'body' => $body
+            ], []);
+        return ApiHelper::success(['message' => 'success']);
+    }
 }

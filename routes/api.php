@@ -40,6 +40,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/like', 'Api\UserController@like');
         Route::post('/pass', 'Api\UserController@pass');
         Route::get('/manual_friend/{id}', 'Api\UserController@manual_friend');
+        Route::post('/push/{matching_id}', 'Api\UserController@push_user');
     });
 });
 
