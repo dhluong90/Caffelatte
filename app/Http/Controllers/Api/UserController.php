@@ -379,9 +379,7 @@ class UserController extends Controller
         $data = $request->input('data');
         $result = NotificationHelper::send($user_matching->fcm_token, [
                 'title' => $title,
-                'body' => $body,
-                'sound' => 'default',
-                'badge' => 'increment'
+                'body' => $body
             ], $data);
         return ApiHelper::success(['message' => 'success']);
     }

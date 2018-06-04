@@ -42,6 +42,9 @@ Class NotificationHelper {
      * @return respone
      */
     public static function send($fcm_token, $notification, $data) {
+        // add sound default
+        $notification['sound'] = 'default';
+
         $client = new \GuzzleHttp\Client();
         try {
             $res = $client->request('POST', 'https://fcm.googleapis.com/fcm/send', [
