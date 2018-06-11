@@ -5,9 +5,8 @@ use App\User;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
-use App\Http\Models\Business\UserModel;
-use App\Http\Models\Dal\UserCModel;
-use App\Http\Models\Dal\UserQModel;
+use App\Http\Models\Dal\CustomerCModel;
+use App\Http\Models\Dal\CustomerQModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -84,7 +83,7 @@ class AuthController extends Controller
         }
 
         // get current user
-        $user = UserQModel::get_user_by_facebook_id($profile['id']);
+        $user = CustomerQModel::get_user_by_facebook_id($profile['id']);
 
         if ($user) {
             // login
@@ -93,14 +92,14 @@ class AuthController extends Controller
                 'exp' => time() + config('constant.jwt.token_expire')
             ];
             $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
-            UserCModel::update_user($user->id, [
+            CustomerCModel::update_user($user->id, [
                 'token' => $token,
                 'facebook_token' => $facebook_token,
                 '_friend' => json_encode($friends),
                 'login_at' => date('Y-m-d H:i:s')
             ]);
 
-            $user = UserQModel::get_user_by_facebook_id($profile['id']);
+            $user = CustomerQModel::get_user_by_facebook_id($profile['id']);
 
             return ApiHelper::success($user);
         } else {
@@ -116,7 +115,7 @@ class AuthController extends Controller
                     'created_at' => date('Y-m-d H:i:s')
                 ];
 
-                $user_id = UserCModel::create_user($data);
+                $user_id = CustomerCModel::create_user($data);
 
                 // setup jwt to update token
                 $jwt = [
@@ -124,7 +123,7 @@ class AuthController extends Controller
                     'exp' => time() + config('constant.jwt.token_expire')
                 ];
                 $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
-                UserCModel::update_user($user_id, ['token' => $token]);
+                CustomerCModel::update_user($user_id, ['token' => $token]);
             } catch (\Exception $e) {
                 return ApiHelper::error(
                     config('constant.error_type.server_error'),
@@ -134,7 +133,7 @@ class AuthController extends Controller
                 );
             }
 
-            $user = UserQModel::get_user_by_facebook_id($profile['id']);
+            $user = CustomerQModel::get_user_by_facebook_id($profile['id']);
 
             return ApiHelper::success($user);
         }

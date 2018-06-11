@@ -4,8 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Models\Business\UserModel;
-use App\Http\Models\Dal\UserQModel;
+use App\Http\Models\Dal\CustomerQModel;
 use App\Http\Helpers\ApiHelper;
 use \Firebase\JWT\JWT;
 use \Illuminate\Http\Request;
@@ -44,7 +43,7 @@ class ApiToken
             );
         }
 
-        $user = UserQModel::get_user_by_token($token);
+        $user = CustomerQModel::get_user_by_token($token);
         if (!$user) {
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),

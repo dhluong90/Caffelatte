@@ -42,7 +42,7 @@ class SuggestQModel extends Model
      * @return user
      */
     public static function get_users_by_status($user_id, $status, $suggest_at = null) {
-        $query = DB::table('users as u')
+        $query = DB::table('customers as u')
                 ->select('u.*')
                 ->join('suggests as s', 's.matching_id', '=', 'u.id')
                 ->where('s.user_id', '=', $user_id)
@@ -61,7 +61,7 @@ class SuggestQModel extends Model
      * @return user
      */
     public static function get_users_like_me($user_id, $limit = null) {
-        $query = DB::table('users as u')
+        $query = DB::table('customers as u')
                 ->select('u.*', 's.status')
                 ->join('suggests as s', 's.user_id', '=', 'u.id')
                 ->where('s.matching_id', '=', $user_id)
@@ -85,7 +85,7 @@ class SuggestQModel extends Model
         $suggests = [];
 
         // get user like me in $suggest_list
-        $users_like_me = DB::table('users as u')
+        $users_like_me = DB::table('customers as u')
                 ->select('u.*', 's.status')
                 ->join('suggests as s', 's.user_id', '=', 'u.id')
                 ->where('s.matching_id', '=', $user_id)
@@ -100,7 +100,7 @@ class SuggestQModel extends Model
 
         if (count($suggests) < $limit) {
             // get suggest me today
-            $users_suggest_me = DB::table('users as u')
+            $users_suggest_me = DB::table('customers as u')
                     ->select('u.*', 's.status')
                     ->join('suggests as s', 's.matching_id', '=', 'u.id')
                     ->where('s.user_id', '=', $user_id)
@@ -136,7 +136,7 @@ class SuggestQModel extends Model
             array_push($suggested_ids, $item->id);
         }
 
-        $result = DB::table('users')
+        $result = DB::table('customers')
             ->select('*')
             ->where('id', '!=', $user->id)
             ->where(function($query) use ($user) {

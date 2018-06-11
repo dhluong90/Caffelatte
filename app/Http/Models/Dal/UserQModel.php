@@ -8,31 +8,6 @@ use App\Http\Helpers\Constants;
 
 class UserQModel extends Model
 {
-
-    /**
-     * get_user_by_facebook_id
-     * @param $facebook_id
-     * @return user
-     */
-    public static function get_user_by_facebook_id($facebook_id) {
-        return DB::table('users')
-            ->select('*')
-            ->where('facebook_id', '=', $facebook_id)
-            ->first();
-    }
-
-    /**
-     * get_users_by_facebooks
-     * @param $facebooks array
-     * @return user
-     */
-    public static function get_users_by_facebooks($facebooks) {
-        return DB::table('users')
-            ->select('*')
-            ->whereIn('facebook_id', $facebooks)
-            ->get();
-    }
-
     /**
      * get_user_by_token
      * @param $facebook_id
