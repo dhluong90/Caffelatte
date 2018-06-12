@@ -55,7 +55,7 @@ class CustomerController extends Controller
     public function update(Request $request) {
         $user_id = $request->input('user_id');
         $data = [];
-        if ($request->input('gender') || $request->input('gender') == 0) {
+        if ($request->input('gender') || $request->input('gender') === 0) {
             $data['gender'] = $request->input('gender');
         }
 
