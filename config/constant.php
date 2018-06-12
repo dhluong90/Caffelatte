@@ -15,6 +15,7 @@ return [
             'liked' => 2,
             'passed' => 3,
             'approved' => 4,
+            'unmatch' => 5,
         ],
         'limit' => 3
     ],

@@ -10,14 +10,31 @@ class SuggestQModel extends Model
 
     /**
      * get_passed_by_user_id
-     * @param $facebook_id
+     * @param $user_id
      * @return user
      */
     public static function get_passed_by_user_id($user_id) {
         return DB::table('suggests')
             ->select('*')
             ->where('user_id', '=', $user_id)
+            ->where('status', config('constant.suggest.status.passed'))
             ->get();
+    }
+
+    /**
+     * get_unmatch_by_user_id
+     * @param $user_id
+     * @return user
+     */
+    public static function get_unmatch_by_user_id($user_id) {
+        return DB::table('suggests')
+            ->select('*')
+            ->where(function($query) use ($user_id) {
+                $query->where('user_id', '=', $user_id)
+                    ->orWhere('matching_id', '=', $user_id);
+            })
+            ->where('status', config('constant.suggest.status.approved'))
+            ->first();
     }
 
     /**
@@ -177,6 +194,7 @@ class SuggestQModel extends Model
      */
     public static function get_list_matching($user_id) {
         $result = [];
+        // case 1
         $list = DB::table('suggests')
             ->select('matching_id')
             ->where('user_id', '=', $user_id)
@@ -184,6 +202,16 @@ class SuggestQModel extends Model
 
         foreach ($list as $item) {
             array_push($result, $item->matching_id);
+        }
+
+        // case 2
+        $list = DB::table('suggests')
+            ->select('user_id')
+            ->where('matching_id', '=', $user_id)
+            ->get();
+
+        foreach ($list as $item) {
+            array_push($result, $item->user_id);
         }
 
         return $result;

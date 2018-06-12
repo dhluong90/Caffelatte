@@ -34,7 +34,14 @@ class StickerController extends Controller
                 'items' => []
             ];
             foreach ($files as $file) {
-                array_push($temp['items'], url('/') . '/' . $file);
+                $start = mb_strrpos($file, '_') + 1;
+                $end = mb_strrpos($file, '.');
+                $length = $end - $start;
+                $item = [
+                    'id' => mb_substr($file, $start, $length),
+                    'link' => url('/') . '/' . $file
+                ];
+                array_push($temp['items'], $item);
             }
             array_push($data, $temp);
         }

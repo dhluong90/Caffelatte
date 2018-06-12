@@ -272,6 +272,38 @@ class CustomerController extends Controller
         return ApiHelper::error();
     }
 
+    public function unmatch(Request $request) {
+        $user_id = $request->input('user_id');
+        $matching_id = $request->input('matching_id');
+
+        // check user matching
+        $user_matching = CustomerQModel::get_user_by_id($matching_id);
+        if (!$user_matching) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user matching id not found',
+                404
+            );
+        }
+
+        $item = SuggestQModel::get_unmatch_by_user_id($user_id);
+
+        if (!$item) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'user matching can not unmatch',
+                404
+            );
+        }
+
+        SuggestCModel::update_suggest($item->id, [
+            'status' => config('constant.suggest.status.unmatch'),
+            'updated_at' => date('Y-m-d', time())
+        ]);
+
+        return ApiHelper::success(['message' => 'success']);
+    }
+
     public function suggest(Request $request) {
         $current_time = time();
         // test

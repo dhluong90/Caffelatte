@@ -35,6 +35,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('/profile/{id}', 'Api\CustomerController@profile');
         Route::post('/like', 'Api\CustomerController@like');
         Route::post('/pass', 'Api\CustomerController@pass');
+        Route::post('/unmatch', 'Api\CustomerController@unmatch');
         Route::get('/manual_friend/{id}', 'Api\CustomerController@manual_friend');
         Route::post('/push/{matching_id}', 'Api\CustomerController@push_user');
     });
