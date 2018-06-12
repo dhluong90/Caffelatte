@@ -281,12 +281,12 @@ class CustomerController extends Controller
         if (!$user_matching) {
             return ApiHelper::error(
                 config('constant.error_type.not_found'), 404,
-                'user matching id not found',
+                'user unmatch id not found',
                 404
             );
         }
 
-        $item = SuggestQModel::get_unmatch_by_user_id($user_id);
+        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
 
         if (!$item) {
             return ApiHelper::error(
@@ -302,6 +302,18 @@ class CustomerController extends Controller
         ]);
 
         return ApiHelper::success(['message' => 'success']);
+    }
+
+    public function list_unmatch(Request $request) {
+        $user_id = $request->input('user_id');
+
+        $list = SuggestQModel::get_list_unmatch_by_user_id($user_id);
+
+        if (!$list) {
+            return ApiHelper::success([]);
+        }
+
+        return ApiHelper::success($list);
     }
 
     public function suggest(Request $request) {

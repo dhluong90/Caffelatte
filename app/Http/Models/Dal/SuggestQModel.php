@@ -24,17 +24,47 @@ class SuggestQModel extends Model
     /**
      * get_unmatch_by_user_id
      * @param $user_id
+     * @param $matching_id
      * @return user
      */
-    public static function get_unmatch_by_user_id($user_id) {
-        return DB::table('suggests')
-            ->select('*')
-            ->where(function($query) use ($user_id) {
-                $query->where('user_id', '=', $user_id)
-                    ->orWhere('matching_id', '=', $user_id);
-            })
-            ->where('status', config('constant.suggest.status.approved'))
-            ->first();
+    public static function get_unmatch_by_user_id($user_id, $matching_id) {
+        $sql = "select *
+            from suggests
+            where ((user_id = " . $user_id . " and matching_id = " . $matching_id . ") or 
+                (user_id = " . $matching_id . " and matching_id = " . $user_id . "))
+            and status = '" . config('constant.suggest.status.approved') . "'";
+        $result = DB::select($sql);
+        if ($result) {
+            return $result[0];
+        }
+        return $result;
+    }
+
+    /**
+     * get_list_unmatch_by_user_id
+     * @param $user_id
+     * @return user
+     */
+    public static function get_list_unmatch_by_user_id($user_id) {
+        // case 1, user is user_id
+        $list1 = DB::table('customers as u')
+                ->select('u.*')
+                ->join('suggests as s', 's.matching_id', '=', 'u.id')
+                ->where('s.user_id', '=', $user_id)
+                ->where('s.status', config('constant.suggest.status.unmatch'))
+                ->get()
+                ->toArray();
+
+        // case 2, user is matching_id
+        $list2 = DB::table('customers as u')
+                ->select('u.*')
+                ->join('suggests as s', 's.user_id', '=', 'u.id')
+                ->where('s.matching_id', '=', $user_id)
+                ->where('s.status', config('constant.suggest.status.unmatch'))
+                ->get()
+                ->toArray();
+        $result = array_merge($list1, $list2);
+        return $result;
     }
 
     /**
