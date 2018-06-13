@@ -36,7 +36,7 @@
                     <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
                         <div class="row">
                             <div class="col-sm-12">
-                                <form action="{{ url('/admincp/user/member') }}" method="GET" class="form-list-filter-user">
+                                <form action="{{ url('/admincp/user/admin') }}" method="GET" class="form-list-filter-user">
                                     <div id="example1_filter" class="dataTables_filter pull-right">
                                         <div class="input-group input-group-sm">
                                             <input type="text" class="form-control" placeholder="Email..." name="q">
@@ -63,15 +63,15 @@
                                     </thead>
                                     <tbody>
                                         <?php $i = 1; ?>
-                                        @foreach ($users as $user)
+                                        @foreach ($users as $admin)
                                         <?php $i++; ?>
                                         <tr role="row" class="{{ $i % 2 == 0 ? 'odd' : 'even' }}">
-                                            <td class="sorting_1">{{ $user->name }}</td>
-                                            <td class="sorting_1">{{ $user->email }}</td>
-                                            <td class="sorting_1">{{ $user->name }}</td>
+                                            <td class="sorting_1">{{ $admin->name }}</td>
+                                            <td class="sorting_1">{{ $admin->email }}</td>
+                                            <td class="sorting_1">Admin</td>
                                             <td class="">
-                                                <a href="{{ url('/admincp/user/unset_admin/' . $user->id) }}" class="btn-unset-admin" title="Hủy admin">Hủy admin
-                                                </a>
+                                                {{-- <a href="{{ url('/admincp/admin/unset_admin/' . $admin->id) }}" class="btn-unset-admin" title="Hủy admin">Hủy admin
+                                                </a> --}}
                                             </td>
                                         </tr>
                                         @endforeach

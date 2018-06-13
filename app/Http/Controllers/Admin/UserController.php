@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Models\Dal\UserQModel;
 use App\Http\Models\Dal\UserCModel;
+use App\Http\Models\Dal\CustomerQModel;
 use Illuminate\Support\Facades\Input;
 use App\Http\Helpers\Constants;
 
@@ -34,8 +35,7 @@ class UserController extends Controller
             $keyword = $_GET['q'];
         }
 
-        $data['users'] = UserQModel::search_user_paging(Constants::ROLES['member'], $keyword);
-
+        $data['users'] = CustomerQModel::search_user_paging($keyword);
         return view('vendor.adminlte.user.list_member', $data);
     }
 
@@ -51,7 +51,6 @@ class UserController extends Controller
         }
 
         $data['users'] = UserQModel::search_user_paging(Constants::ROLES['admin'], $keyword);
-
         return view('vendor.adminlte.user.list_admin', $data);
     }
 

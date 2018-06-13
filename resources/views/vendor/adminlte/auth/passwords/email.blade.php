@@ -11,7 +11,7 @@
 
         <div class="login-box">
         <div class="login-logo">
-            <a href="{{ url('/home') }}"><b>Ăn Cơm Nhà</b></a>
+            <a href="#"><b>Cafe & Latte</b></a>
         </div><!-- /.login-logo -->
 
         @if (session('status'))
@@ -52,7 +52,7 @@
             </form>
 
             <a href="{{ url('/login') }}">{{ trans('adminlte_lang::message.login') }}</a><br>
-            <a href="{{ url('/register') }}" class="text-center">{{ trans('adminlte_lang::message.registermember') }}</a>
+            {{-- <a href="{{ url('/register') }}" class="text-center">{{ trans('adminlte_lang::message.registermember') }}</a> --}}
 
         </div><!-- /.login-box-body -->
 

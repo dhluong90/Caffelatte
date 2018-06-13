@@ -66,4 +66,18 @@ class CustomerQModel extends Model
                 ->where('id', '=', $user_id)
                 ->first();
     }
+
+    /**
+     * search user paging
+     * @param $email string 
+     * @param $role int
+     * @return array Illuminate\Pagination\LengthAwarePaginator
+     */
+    public static function search_user_paging($email) {
+        return DB::table('customers' .' as c')
+                ->select('c.*')
+                ->orderBy('c.id', 'desc')
+                ->where('c.name', 'like', '%' . $email . '%')
+                ->paginate(10);
+    }
 }

@@ -39,7 +39,7 @@
                                 <form action="{{ url('/admincp/user/member') }}" method="GET" class="form-list-filter-user">
                                     <div id="example1_filter" class="dataTables_filter pull-right">
                                         <div class="input-group input-group-sm">
-                                            <input type="text" class="form-control" placeholder="Email..." name="q">
+                                            <input type="text" class="form-control" placeholder="Tên..." name="q">
                                             <span class="input-group-btn">
                                               <button type="submit" class="btn btn-info btn-flat">
                                                   <i class="fa fa-search"></i>
@@ -55,24 +55,27 @@
                                 <table id="example2" class="table table-bordered table-striped table-hover dataTable" role="grid" aria-describedby="example2_info">
                                     <thead>
                                         <tr role="row">
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">Ảnh đại diện</th>
                                             <th class="sorting_asc" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">Tên</th>
                                             <th class="sorting_asc" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">Email</th>
-                                            <th class="sorting_asc" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">Role</th>
-                                            <th class="sorting" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">Tác vụ</th>
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">Giới tính</th>
+                                            <th class="sorting" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">Số điện thoại</th>
+                                            <th class="sorting" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">Quốc gia</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php $i = 1; ?>
-                                        @foreach ($users as $user)
+                                        @foreach ($users as $member)
                                         <?php $i++; ?>
                                         <tr role="row" class="{{ $i % 2 == 0 ? 'odd' : 'even' }}">
-                                            <td class="sorting_1">{{ $user->name }}</td>
-                                            <td class="sorting_1">{{ $user->email }}</td>
-                                            <td class="sorting_1">{{ $user->name }}</td>
-                                            <td class="">
-                                                <a href="{{ url('/admincp/user/set_admin/' . $user->id) }}" class="btn-set-admin" title="Cấp quyền admin">Cấp quyền admin
-                                                </a>
+                                            <td class="sorting_1">
+                                                <img src="{{ json_decode($member->image)[0] }}" alt="" class="img-responsive" width="50px" height="50px">
                                             </td>
+                                            <td class="sorting_1">{{ $member->name }}</td>
+                                            <td class="sorting_1">{{ $member->email }}</td>
+                                             <td class="sorting_1">{{ $member->gender != null ? ($member->gender == 1 ? 'Nam' : 'Nữ') : '' }}</td>
+                                            <td class="sorting_1">{{ $member->phone }}</td>
+                                            <td class="">{{ $member->country }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
