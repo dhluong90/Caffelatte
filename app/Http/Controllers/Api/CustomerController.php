@@ -427,4 +427,35 @@ class CustomerController extends Controller
             ], $data);
         return ApiHelper::success(['message' => 'success']);
     }
+
+    public function add_point(Request $request) {
+        $current_time = time();
+        // test
+        if ($request->input('time')) {
+            $current_time = strtotime($request->input('time'));
+        }
+        $user_id = $request->input('user_id');
+        $user = CustomerQModel::get_user_by_id($user_id);
+
+        if ($user->point_at != date('Y-m-d', $current_time)) {
+            CustomerCModel::update_user($user_id, [
+                'point' => $user->point + 1,
+                'old_point' => $user->point,
+                'point_at' => date('Y-m-d', $current_time)
+            ]);
+
+            return ApiHelper::success(['message' => 'success1']);
+        } else {
+            if ($user->point - $user->old_point < 3) {
+                CustomerCModel::update_user($user_id, [
+                    'point' => $user->point + 1,
+                    'point_at' => date('Y-m-d', $current_time)
+                ]);
+
+                return ApiHelper::success(['message' => 'success2']);
+            } else {
+                return ApiHelper::error();
+            }
+        }
+    }
 }
