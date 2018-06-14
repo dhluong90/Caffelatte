@@ -39,6 +39,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('/list_unmatch', 'Api\CustomerController@list_unmatch');
         Route::get('/manual_friend/{id}', 'Api\CustomerController@manual_friend');
         Route::post('/push/{matching_id}', 'Api\CustomerController@push_user');
+        Route::post('/point/add', 'Api\CustomerController@add_point');
     });
 });
 
