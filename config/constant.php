@@ -51,6 +51,11 @@ return [
             'get_friend_facebook_failed' => 709,
             'token_expired' => 401,
             'token_wrong' => 401,
+        ],
+
+        'customer' => [
+            'point_limit' => 700,
+            'point_not_enough' => 701
         ]
     ],
 ];

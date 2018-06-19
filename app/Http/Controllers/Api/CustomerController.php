@@ -175,19 +175,8 @@ class CustomerController extends Controller
         // get current
         $user_current = CustomerQModel::get_user_by_id($user_id);
 
-        // case 1: user matching is suggested by current user
-        $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
-
-        // case 2: check matching_id is liked current user
+        // case 1: check matching_id is liked current user
         $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.liked'));
-
-        if (!$suggested_item && !$liked_item) {
-            return ApiHelper::error(
-                config('constant.error_type.not_found'), 404,
-                'user matching can not like',
-                404
-            );
-        }
 
         if ($liked_item) {
             SuggestCModel::update_suggest($liked_item->id, [
@@ -213,7 +202,12 @@ class CustomerController extends Controller
             }
 
             return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
-        } else {
+        }
+
+        // case 2: user matching is suggested by current user
+        $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
+
+        if ($suggested_item) {
             SuggestCModel::update_suggest($suggested_item->id, [
                 'status' => config('constant.suggest.status.liked'),
                 'updated_at' => date('Y-m-d', time())
@@ -221,6 +215,38 @@ class CustomerController extends Controller
 
             return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
         }
+
+        // case 3: user matching is discover by current user
+        $discover_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.discover'));
+
+        if ($discover_item) {
+            if ($user_current->point < 1) {
+                return ApiHelper::error(
+                    config('constant.error_type.bad_request'),
+                    config('constant.error_code.customer.point_not_enough'),
+                    'user not enough point',
+                    400
+                );
+            }
+
+            SuggestCModel::update_suggest($discover_item->id, [
+                'status' => config('constant.suggest.status.liked'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+
+            // decrease point user
+            CustomerCModel::update_user($user_id, [
+                'point' => $user_current->point - 1
+            ]);
+
+            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+        }
+
+        return ApiHelper::error(
+            config('constant.error_type.not_found'), 404,
+            'user matching can not like',
+            404
+        );
     }
 
     public function pass(Request $request) {
@@ -507,7 +533,12 @@ class CustomerController extends Controller
 
                 return ApiHelper::success(['message' => 'success add point']);
             } else {
-                return ApiHelper::error();
+                return ApiHelper::error(
+                    config('constant.error_type.bad_request'),
+                    config('constant.error_code.customer.point_limit'),
+                    'point limit',
+                    400
+                );
             }
         }
     }
