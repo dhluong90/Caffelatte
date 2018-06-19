@@ -51,4 +51,16 @@ class SuggestCModel extends Model
                 ->whereIn('status', [config('constant.suggest.status.suggested')])
                 ->delete();
     }
+
+    /**
+     * reset_discover
+     * @param user_id int
+     * @return
+     */
+    public static function reset_discover($user_id) {
+        return DB::table('suggests')
+                ->where('user_id', '=', $user_id)
+                ->whereIn('status', [config('constant.suggest.status.discover')])
+                ->delete();
+    }
 }

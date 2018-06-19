@@ -17,7 +17,8 @@ class CreateSuggestsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id')->index();
             $table->unsignedInteger('matching_id')->index();
-            $table->tinyInteger('status')->default(null); // suggest: 1, like: 2, passed: 3, approve: 4, unmatch: 5
+            // suggest: 1, like: 2, passed: 3, approve: 4, unmatch: 5, discover: 6
+            $table->tinyInteger('status')->default(null);
             $table->text('created_at')->nullable()->default(null);
             $table->text('updated_at')->nullable()->default(null);
         });

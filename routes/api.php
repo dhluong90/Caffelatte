@@ -32,6 +32,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::group(['middleware' => 'api.token'], function () {
         Route::put('/update', 'Api\CustomerController@update');
         Route::get('/suggest', 'Api\CustomerController@suggest');
+        Route::get('/discover', 'Api\CustomerController@discover');
         Route::get('/profile/{id}', 'Api\CustomerController@profile');
         Route::post('/like', 'Api\CustomerController@like');
         Route::post('/pass', 'Api\CustomerController@pass');

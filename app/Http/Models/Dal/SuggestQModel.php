@@ -246,4 +246,45 @@ class SuggestQModel extends Model
 
         return $result;
     }
+
+    /**
+     * get_current_discover
+     * @param $user_id
+     * @param $discover_at
+     * @return user
+     */
+    public static function get_current_discover($user_id, $discover_at) {
+        // get user like me in $suggest_list
+        return DB::table('customers as u')
+                ->select('u.*', 's.status')
+                ->join('suggests as s', 's.matching_id', '=', 'u.id')
+                ->where('s.user_id', '=', $user_id)
+                ->where('s.status', '=', config('constant.suggest.status.discover'))
+                ->limit(config('constant.suggest.limit'))
+                ->get();
+    }
+
+    /**
+     * get_new_discover
+     * @param $user object
+     * @return users
+     */
+    public static function get_new_discover($user) {
+        // get all user matching from table suggest
+        $user_matching_ids = self::get_list_matching($user->id);
+        $result = DB::table('customers')
+            ->select('*')
+            ->where('id', '!=', $user->id)
+            ->where(function($query) use ($user) {
+                $query->where('gender', '!=', $user->gender)
+                ->orWhere('gender', '=', null);
+            })
+            ->where('country', '=', $user->country)
+            ->whereNotIn('id', $user_matching_ids)
+            ->orderBy(DB::raw('RAND()'))
+            ->limit(config('constant.suggest.limit'))
+            ->get();
+
+        return $result;
+    }
 }

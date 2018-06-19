@@ -391,11 +391,63 @@ class CustomerController extends Controller
                     SuggestCModel::create_suggest($data);
                 }
 
-                // update cache field _suggested table user
+                // update cache field _suggested table customer
                 CustomerCModel::update_user($user_id, [
                     '_suggested' => json_encode($matching_ids),
                     'suggest_at' => date('Y-m-d', $current_time)
                 ]);
+            }
+        }
+
+        return ApiHelper::success($suggests);
+    }
+
+    public function discover(Request $request) {
+        $current_time = time();
+        // test
+        if ($request->input('time')) {
+            $current_time = strtotime($request->input('time'));
+        }
+
+        $suggests = [];
+
+        $user_id = $request->input('user_id');
+        $user = CustomerQModel::get_user_by_id($user_id);
+
+        if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
+            // get user in field suggested
+            $result = SuggestQModel::get_current_discover($user_id, $user->discover_at);
+
+            return ApiHelper::success($result);
+        } else {
+            // remove old discover yesterday
+            SuggestCModel::reset_discover($user_id);
+
+            // get new discover
+            $result = SuggestQModel::get_new_discover($user);
+
+            if (!empty($result)) {
+                $data = [];
+                foreach ($result as $item) {
+                    array_push($data, [
+                        'user_id' => $user_id,
+                        'matching_id' => $item->id,
+                        'status' => config('constant.suggest.status.discover'),
+                        'created_at' => date('Y-m-d', $current_time)
+                    ]);
+                }
+
+                // save list discover table suggest
+                if (!empty($data)) {
+                    SuggestCModel::create_suggest($data);
+                }
+
+                // update discover_at table customer
+                CustomerCModel::update_user($user_id, [
+                    'discover_at' => date('Y-m-d', $current_time)
+                ]);
+
+                return ApiHelper::success($result);
             }
         }
 
@@ -438,21 +490,22 @@ class CustomerController extends Controller
         $user = CustomerQModel::get_user_by_id($user_id);
 
         if ($user->point_at != date('Y-m-d', $current_time)) {
+            // new date, reset old_point
             CustomerCModel::update_user($user_id, [
                 'point' => $user->point + 1,
-                'old_point' => $user->point,
+                'old_point' => 1,
                 'point_at' => date('Y-m-d', $current_time)
             ]);
 
-            return ApiHelper::success(['message' => 'success1']);
+            return ApiHelper::success(['message' => 'success add point new date']);
         } else {
-            if ($user->point - $user->old_point < 3) {
+            if ($user->old_point < 3) {
                 CustomerCModel::update_user($user_id, [
                     'point' => $user->point + 1,
-                    'point_at' => date('Y-m-d', $current_time)
+                    'old_point' => $user->old_point + 1
                 ]);
 
-                return ApiHelper::success(['message' => 'success2']);
+                return ApiHelper::success(['message' => 'success add point']);
             } else {
                 return ApiHelper::error();
             }
