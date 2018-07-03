@@ -11,12 +11,12 @@ class CustomersTableSeeder extends Seeder
      */
     public function run()
     {
-        $customers = DB::table('users')->get();
-        // var_dump($customers);
-        foreach ($customers as $key => $value) {
-            $customer = (array)$value;
-            unset($customer['role']);
-            DB::table('customers')->insert($customer);
-        }
+        // $customers = DB::table('users')->get();
+        // // var_dump($customers);
+        // foreach ($customers as $key => $value) {
+        //     $customer = (array)$value;
+        //     unset($customer['role']);
+        //     DB::table('customers')->insert($customer);
+        // }
     }
 }

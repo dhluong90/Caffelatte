@@ -184,6 +184,7 @@ return [
         Acacha\AdminLTETemplateLaravel\Providers\AdminLTETemplateServiceProvider::class,
 
         // Barryvdh\Debugbar\ServiceProvider::class,
+        Yish\Imgur\UploadServiceProvider::class,
 
     ],
 
@@ -240,6 +241,7 @@ return [
         'AdminLTE' => Acacha\AdminLTETemplateLaravel\Facades\AdminLTE::class,
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
         'Youtube' => Alaouy\Youtube\Facades\Youtube::class,
+        'Imgur' => Yish\Imgur\Facades\Upload::class,
     ],
 
 ];

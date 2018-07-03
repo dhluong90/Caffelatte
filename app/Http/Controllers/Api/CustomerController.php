@@ -13,9 +13,14 @@ use App\Http\Models\Dal\SuggestCModel;
 use App\Http\Models\Dal\SuggestQModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use \Firebase\JWT\JWT;
+use Yish\Imgur\Facades\Upload as Imgur;
 
 
 /**
@@ -541,5 +546,53 @@ class CustomerController extends Controller
                 );
             }
         }
+    }
+
+    public function upload_avatar(Request $request) {
+        $rules = array(
+            'image' => 'required | mimes:jpeg,jpg,png',
+            'location' => 'required'
+        );
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.customer.image_error_format'),
+                'validate image, location error',
+                400
+            );
+        }
+        $file = $request->file('image');
+        $location = $request->input('location');
+
+        $user_id = $request->input('user_id');
+        $user = CustomerQModel::get_user_by_id($user_id);
+        $images = json_decode($user->image);
+
+        // clear image user
+        for ($i = 0; $i < config('constant.customer.count_image'); $i++) {
+            if (!isset($images[$i])) {
+                $images[$i] = '';
+            }
+        }
+
+        try {
+            $image = Imgur::upload($file);
+        } catch (\Exception $e) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.common.server_error'),
+                'Upload failed: ' . $e->getMessage(),
+                400
+            );
+        }
+
+        $images[$location] = $image->link();
+
+        CustomerCModel::update_user($user_id, [
+            'image' => json_encode($images),
+        ]);
+
+        return ApiHelper::success(['message' => 'upload image success']);
     }
 }

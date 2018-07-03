@@ -25,6 +25,10 @@ return [
         'token_expire' => 30 * 24 *3600
     ],
 
+    'customer' => [
+        'count_image' => 9,
+    ],
+
     'error_type' => [
         'not_found' => 'NotFound',
         'bad_request' => 'BadRequest',
@@ -55,7 +59,8 @@ return [
 
         'customer' => [
             'point_limit' => 700,
-            'point_not_enough' => 701
+            'point_not_enough' => 701,
+            'image_error_format' => 702,
         ]
     ],
 ];
