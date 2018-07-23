@@ -80,4 +80,16 @@ class CustomerQModel extends Model
                 ->where('c.name', 'like', '%' . $email . '%')
                 ->paginate(10);
     }
+
+    /**
+     * get all customer
+     * @return id
+     */
+    public static function get_users_fcm_token() {
+        return DB::table('customers')
+                ->select('fcm_token')
+                ->where('fcm_token', '!=', NUll)
+                ->get()
+                ->toArray();
+    }
 }

@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         //
+        'App\Console\Commands\NotificationSend',
     ];
 
     /**
@@ -26,6 +27,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
+        // $schedule->command('notification:send')->dailyAt('09:00');
+        $schedule->command('notification:send')->everyMinute();
     }
 
     /**

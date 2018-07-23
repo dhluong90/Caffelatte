@@ -595,4 +595,30 @@ class CustomerController extends Controller
 
         return ApiHelper::success(['message' => 'upload image success']);
     }
+
+    public function delete_avatar(Request $request) {
+        $rules = array(
+            'location' => 'required'
+        );
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'), 400,
+                'location missing',
+                400
+            );
+        }
+        $location = $request->input('location');
+        $user_id = $request->input('user_id');
+        $user = CustomerQModel::get_user_by_id($user_id);
+        $images = json_decode($user->image);
+
+        $images[$location] = '';
+
+        CustomerCModel::update_user($user_id, [
+            'image' => json_encode($images),
+        ]);
+
+        return ApiHelper::success(['message' => 'upload image success']);
+    }
 }
