@@ -180,7 +180,7 @@ class CustomerController extends Controller
         // get current
         $user_current = CustomerQModel::get_user_by_id($user_id);
 
-        // case 1: check matching_id is liked current user
+        // case 1: user matching liked current user
         $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.liked'));
 
         if ($liked_item) {
@@ -189,7 +189,8 @@ class CustomerController extends Controller
                 'updated_at' => date('Y-m-d', time())
             ]);
 
-            // delete suggest if excess record
+            // delete suggest if exist record
+            $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
             if ($suggested_item) {
                 SuggestCModel::delete_suggest($suggested_item->id);
             }
@@ -209,7 +210,7 @@ class CustomerController extends Controller
             return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
         }
 
-        // case 2: user matching is suggested by current user
+        // case 2: user matching have suggested for current user
         $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
 
         if ($suggested_item) {
