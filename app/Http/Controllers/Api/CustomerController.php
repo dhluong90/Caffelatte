@@ -57,6 +57,25 @@ class CustomerController extends Controller
         return ApiHelper::success($user);
     }
 
+    /**
+     * @param Request $request
+     * @param $id
+     * @return \App\Http\Helpers\json
+     */
+    public function profile_by_chat_id (Request $request, $id) {
+        $user = CustomerQModel::get_users_by_chat_id($id);
+        dd($user);
+        if (!$user) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'chat id not found',
+                404
+            );
+        }
+
+        return ApiHelper::success($user);
+    }
+
     public function update(Request $request) {
         $user_id = $request->input('user_id');
         $data = [];

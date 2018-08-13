@@ -34,6 +34,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('/suggest', 'Api\CustomerController@suggest');
         Route::get('/discover', 'Api\CustomerController@discover');
         Route::get('/profile/{id}', 'Api\CustomerController@profile');
+        Route::get('/profile_by_id/{id}', 'Api\CustomerController@profile_by_chat_id');
         Route::post('/like', 'Api\CustomerController@like');
         Route::post('/pass', 'Api\CustomerController@pass');
         Route::post('/unmatch', 'Api\CustomerController@unmatch');
@@ -48,6 +49,12 @@ Route::group(['prefix' => 'user'], function () {
 
 Route::group(['prefix' => 'sticker'], function () {
     Route::get('/list', 'Api\StickerController@list_sticker');
+});
+
+
+$router->group(['prefix'=>'location'], function () use ($router) {
+    $router->get('/country', ['as' => 'v1.location.country', 'uses' => 'Api\LocationController@getListCountry']);
+    $router->get('/city/{code}', ['as' => 'v1.location.city', 'uses' => 'Api\LocationController@getListCityByCountryCode']);
 });
 
 // Route::group(['prefix' => 'tool'], function () {
