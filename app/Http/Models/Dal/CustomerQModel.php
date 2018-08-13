@@ -92,4 +92,10 @@ class CustomerQModel extends Model
                 ->get()
                 ->toArray();
     }
+
+    public static function get_users_by_chat_id ($id) {
+        return DB::table('customers')
+            ->where('chat_id', '=', $id)
+            ->first();
+    }
 }
