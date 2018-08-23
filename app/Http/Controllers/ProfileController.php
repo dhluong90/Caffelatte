@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests;
+use Iivannov\Branchio\Support\UrlType;
 use Illuminate\Http\Request;
 use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\UserQModel;
@@ -15,6 +16,7 @@ use App\Http\Models\Dal\StoreUserCModel;
 use Illuminate\Support\Facades\Input;
 use App\Http\Helpers\ImageHelper;
 use App\Http\Helpers\Constants;
+
 use Auth;
 
 class ProfileController extends PageController
@@ -233,4 +235,6 @@ class ProfileController extends PageController
             return back();
         }
     }
+
+
 }

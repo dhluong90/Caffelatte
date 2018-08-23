@@ -34,5 +34,9 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
+    'branchio' => [
+        'key' => env('BRANCH_IO_KEY'),
+        'secret' => env('BRANCH_IO_SECRET')
+    ]
 
 ];
