@@ -162,12 +162,6 @@ class AuthController extends Controller
 
             $user = CustomerQModel::get_user_by_facebook_id($profile['id']);
 
-            $share_link = $this->generate_branch_io_link($user->id, $user->name);
-            $detail_link = $this->get_link_data($share_link);
-            $user->share_link_id = $detail_link->data->{'~id'};
-            $user->share_link = $share_link;
-            $user->share_link_created_at = Carbon::now();
-            $user->save();
 
 
             return ApiHelper::success($user);
