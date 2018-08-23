@@ -185,6 +185,7 @@ return [
 
         // Barryvdh\Debugbar\ServiceProvider::class,
         Yish\Imgur\UploadServiceProvider::class,
+        Iivannov\Branchio\Integration\Laravel\BranchioServiceProvider::class,
 
     ],
 
@@ -242,6 +243,8 @@ return [
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
         'Youtube' => Alaouy\Youtube\Facades\Youtube::class,
         'Imgur' => Yish\Imgur\Facades\Upload::class,
+        'Branchio' => Iivannov\Branchio\Integration\Laravel\Facade\Branchio::class
+
     ],
 
 ];

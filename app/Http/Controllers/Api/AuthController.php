@@ -1,16 +1,18 @@
 <?php
+
 namespace app\Http\Controllers\Api;
 
-use App\User;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
 use App\Http\Models\Dal\CustomerCModel;
 use App\Http\Models\Dal\CustomerQModel;
+use Carbon\Carbon;
+use Iivannov\Branchio\Support\UrlType;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+
+use Iivannov\Branchio\Integration\Laravel\Facade\Branchio;
+use Iivannov\Branchio\Link;
 
 use \Firebase\JWT\JWT;
 use Facebook\Facebook;
@@ -27,7 +29,8 @@ class AuthController extends Controller
 
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $facebook_token = $request->input('facebook_token');
 
         if (!$facebook_token) {
@@ -92,14 +95,27 @@ class AuthController extends Controller
                 'exp' => time() + config('constant.jwt.token_expire')
             ];
             $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
-            CustomerCModel::update_user($user->id, [
+
+            $data_update = [
                 'token' => $token,
                 'facebook_token' => $facebook_token,
                 '_friend' => json_encode($friends),
                 'login_at' => date('Y-m-d H:i:s')
-            ]);
+            ];
+
+            if (!$user->share_link) {
+                $share_link = $this->generate_branch_io_link($user->id, $user->name);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+            }
+
+
+            CustomerCModel::update_user($user->id, $data_update);
 
             $user = CustomerQModel::get_user_by_facebook_id($profile['id']);
+
 
             return ApiHelper::success($user);
         } else {
@@ -107,13 +123,14 @@ class AuthController extends Controller
             try {
                 $data = [
                     'name' => $profile['name'],
-                    'image' => json_encode(['https://graph.facebook.com/'.$profile['id'].'/picture?type=large&width=720&height=720']),
+                    'image' => json_encode(['https://graph.facebook.com/' . $profile['id'] . '/picture?type=large&width=720&height=720']),
                     'facebook_id' => $profile['id'],
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
                     'created_at' => date('Y-m-d H:i:s')
                 ];
+
 
                 $user_id = CustomerCModel::create_user($data);
 
@@ -122,8 +139,18 @@ class AuthController extends Controller
                     'id' => $user_id,
                     'exp' => time() + config('constant.jwt.token_expire')
                 ];
+
                 $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
-                CustomerCModel::update_user($user_id, ['token' => $token]);
+
+                $data_update = ['token' => $token];
+
+                $share_link = $this->generate_branch_io_link($user_id, $data['name']);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+
+                CustomerCModel::update_user($user_id, $data_update);
             } catch (\Exception $e) {
                 return ApiHelper::error(
                     config('constant.error_type.server_error'),
@@ -135,7 +162,46 @@ class AuthController extends Controller
 
             $user = CustomerQModel::get_user_by_facebook_id($profile['id']);
 
+            $share_link = $this->generate_branch_io_link($user->id, $user->name);
+            $detail_link = $this->get_link_data($share_link);
+            $user->share_link_id = $detail_link->data->{'~id'};
+            $user->share_link = $share_link;
+            $user->share_link_created_at = Carbon::now();
+            $user->save();
+
+
             return ApiHelper::success($user);
         }
+    }
+
+    public function generate_branch_io_link($id, $name)
+    {
+        $link = new Link();
+        $link->setType(UrlType::MARKETING);
+        $link->setChannel('Sharing');
+        $link->setFeature('Shareing');
+        $link->setCampaign('Share Link Get Point');
+        $link->setStage('Stage');
+        $data = [
+            '$always_deeplink' => true,
+            '$ios_url' => env('IOS_LINK'),
+            '$android_url' => env('ANDROID_LINK'),
+
+            '$og_app_id' => env('BRANCH_IO_APP_ID'),
+            '$og_title' => 'CafeLatteDev',
+            '$og_description' => 'Ứng dụng cafelatte kết bạn ghép đôi!',
+            '$og_image_url' => env('SHARE_LINK_IMAGE'),
+
+            '$app_id' => $id,
+            '$marketing_title' => $name . ' share link action'
+        ];
+        $link->setData($data);
+        return Branchio::createLink($link);
+    }
+
+
+    public function get_link_data($link)
+    {
+        return Branchio::getLink($link);
     }
 }

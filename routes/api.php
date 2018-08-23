@@ -57,6 +57,9 @@ $router->group(['prefix'=>'location'], function () use ($router) {
     $router->get('/city/{code}', ['as' => 'v1.location.city', 'uses' => 'Api\LocationController@getListCityByCountryCode']);
 });
 
+Route::get('/test/generate_deep_link', 'Api\AuthController@generate_branch_io_link');
+Route::get('/test/getlink/', 'Api\AuthController@testLink');
+
 // Route::group(['prefix' => 'tool'], function () {
 //     Route::get('/update_friend', 'Api\ToolController@update_friend');
 //     Route::get('/update_image', 'Api\ToolController@update_image');

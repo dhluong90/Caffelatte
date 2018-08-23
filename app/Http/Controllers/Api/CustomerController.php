@@ -11,6 +11,7 @@ use App\Http\Models\Dal\CustomerCModel;
 use App\Http\Models\Dal\CustomerQModel;
 use App\Http\Models\Dal\SuggestCModel;
 use App\Http\Models\Dal\SuggestQModel;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use \Firebase\JWT\JWT;
 use Yish\Imgur\Facades\Upload as Imgur;
+
 
 
 /**
@@ -641,4 +643,5 @@ class CustomerController extends Controller
 
         return ApiHelper::success(['message' => 'upload image success']);
     }
+
 }
