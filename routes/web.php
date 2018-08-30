@@ -51,3 +51,7 @@ Route::group(['middleware' => ['auth']], function () {
 Route::get('/error', function(){
     return view('vendor.adminlte.errors.notyet');
 });
+
+Route::group(['prefix' => 'webhook'], function () {
+    Route::post('/branch_io', 'BranchIoController@webhook');
+});

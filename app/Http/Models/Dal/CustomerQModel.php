@@ -98,4 +98,8 @@ class CustomerQModel extends Model
             ->whereIn('chat_id', $listId)
             ->get();
     }
+
+    public static function get_user_by_share_link_id($link_id) {
+        return DB::table('customers')->where('share_link_id', '=', $link_id)->first();
+    }
 }
