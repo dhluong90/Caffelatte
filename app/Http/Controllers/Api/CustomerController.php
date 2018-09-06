@@ -40,6 +40,10 @@ class CustomerController extends Controller
     {
 
     }
+    public $ruleUpdateUser = [
+        'phone'=>'sometimes|required|regex:/^\(?\+?([0-9]{1,4})\)?[-\. ]?(\d{3})[-\. ]?([0-9]{7})$/',
+        'email'=>'sometimes|required|email'
+    ];
 
     public function index() {
 
@@ -149,6 +153,13 @@ class CustomerController extends Controller
             $data['name'] = $request->input('name');
         }
 
+        if ($request->input('phone')) {
+            $data['phone'] = $request->input('phone');
+        }
+        if ($request->input('email')) {
+            $data['email'] = $request->input('email');
+        }
+
         if ($request->input('height')) {
             $data['height'] = intval($request->input('height'));
             if ($data['height'] < 0) {
@@ -159,6 +170,16 @@ class CustomerController extends Controller
                     400
                 );
             } 
+        }
+
+        $validation = Validator::make($data, $this->ruleUpdateUser);
+        if ($validation->fails()) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                $validation->errors()->first(),
+                400
+            );
         }
 
         if (empty($data)) {
