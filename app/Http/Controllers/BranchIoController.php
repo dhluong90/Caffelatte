@@ -23,16 +23,14 @@ class BranchIoController extends Controller {
             if ($action == 'INSTALL') {
                 $lastAttributedTouchData = $data->last_attributed_touch_data;
                 $shareLinkId = $lastAttributedTouchData->{'~id'};
-
                 $customer = CustomerQModel::get_user_by_share_link_id($shareLinkId);
-
 
                 if ($customer) {
                     $current_time = time();
                     if ($customer->point_at != date('Y-m-d', $current_time)) {
                         // new date, reset old_point
                         CustomerCModel::update_user($customer->id, [
-                            'point' => $customer->point + 1,
+                            'point' => $customer->point + 2,
                             'old_point' => 1,
                             'point_at' => date('Y-m-d', $current_time)
                         ]);
@@ -41,8 +39,8 @@ class BranchIoController extends Controller {
                     } else {
                         if ($customer->old_point < 3) {
                             CustomerCModel::update_user($customer->id, [
-                                'point' => $customer->point + 1,
-                                'old_point' => $customer->old_point + 1
+                                'point' => $customer->point + 2,
+                                'old_point' => $customer->old_point + 2
                             ]);
 
                             return ApiHelper::success(['message' => 'success add point']);
@@ -57,8 +55,6 @@ class BranchIoController extends Controller {
                     }
                 }
             }
-
-
 
         } catch (Exception $e) {
             $file = fopen("logs/error_webhook.txt","w");

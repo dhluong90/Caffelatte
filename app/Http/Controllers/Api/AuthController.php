@@ -128,7 +128,8 @@ class AuthController extends Controller
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
-                    'created_at' => date('Y-m-d H:i:s')
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'point' => 10
                 ];
 
 
