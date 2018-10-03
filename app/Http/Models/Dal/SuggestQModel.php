@@ -13,7 +13,8 @@ class SuggestQModel extends Model
      * @param $user_id
      * @return user
      */
-    public static function get_passed_by_user_id($user_id) {
+    public static function get_passed_by_user_id($user_id)
+    {
         return DB::table('suggests')
             ->select('*')
             ->where('user_id', '=', $user_id)
@@ -27,7 +28,8 @@ class SuggestQModel extends Model
      * @param $matching_id
      * @return user
      */
-    public static function get_unmatch_by_user_id($user_id, $matching_id) {
+    public static function get_unmatch_by_user_id($user_id, $matching_id)
+    {
         $sql = "select *
             from suggests
             where ((user_id = " . $user_id . " and matching_id = " . $matching_id . ") or 
@@ -45,24 +47,25 @@ class SuggestQModel extends Model
      * @param $user_id
      * @return user
      */
-    public static function get_list_unmatch_by_user_id($user_id) {
+    public static function get_list_unmatch_by_user_id($user_id)
+    {
         // case 1, user is user_id
         $list1 = DB::table('customers as u')
-                ->select('u.*')
-                ->join('suggests as s', 's.matching_id', '=', 'u.id')
-                ->where('s.user_id', '=', $user_id)
-                ->where('s.status', config('constant.suggest.status.unmatch'))
-                ->get()
-                ->toArray();
+            ->select('u.*')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
+            ->where('s.user_id', '=', $user_id)
+            ->where('s.status', config('constant.suggest.status.unmatch'))
+            ->get()
+            ->toArray();
 
         // case 2, user is matching_id
         $list2 = DB::table('customers as u')
-                ->select('u.*')
-                ->join('suggests as s', 's.user_id', '=', 'u.id')
-                ->where('s.matching_id', '=', $user_id)
-                ->where('s.status', config('constant.suggest.status.unmatch'))
-                ->get()
-                ->toArray();
+            ->select('u.*')
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->where('s.matching_id', '=', $user_id)
+            ->where('s.status', config('constant.suggest.status.unmatch'))
+            ->get()
+            ->toArray();
         $result = array_merge($list1, $list2);
         return $result;
     }
@@ -73,7 +76,8 @@ class SuggestQModel extends Model
      * @param $status array
      * @return user
      */
-    public static function get_list_by_status($user_id, $status) {
+    public static function get_list_by_status($user_id, $status)
+    {
         return DB::table('suggests')
             ->select('*')
             ->where('user_id', '=', $user_id)
@@ -88,12 +92,13 @@ class SuggestQModel extends Model
      * @param $suggest_at
      * @return user
      */
-    public static function get_users_by_status($user_id, $status, $suggest_at = null) {
+    public static function get_users_by_status($user_id, $status, $suggest_at = null)
+    {
         $query = DB::table('customers as u')
-                ->select('u.*')
-                ->join('suggests as s', 's.matching_id', '=', 'u.id')
-                ->where('s.user_id', '=', $user_id)
-                ->whereIn('s.status', $status);
+            ->select('u.*')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
+            ->where('s.user_id', '=', $user_id)
+            ->whereIn('s.status', $status);
 
         if ($suggest_at) {
             $query->where('s.created_at', '=', $suggest_at);
@@ -105,15 +110,28 @@ class SuggestQModel extends Model
     /**
      * get_list_user_by_status
      * @param $user_id
+     * @param null $limit
+     * @param user
      * @return user
      */
-    public static function get_users_like_me($user_id, $limit = null) {
-        $query = DB::table('customers as u')
-                ->select('u.*', 's.status')
-                ->join('suggests as s', 's.user_id', '=', 'u.id')
-                ->where('s.matching_id', '=', $user_id)
-                ->where('s.status', '=', config('constant.suggest.status.liked'));
+    public static function get_users_like_me($user_id, $limit = null, $user)
+    {
+        $selectWeightPoint = '(
+                        
+                        (CASE WHEN u.city = "' . $user->city . '" THEN 3 ELSE 0 END)';
+        if ($user->birthday) {
+            $selectWeightPoint .= '  + 
+                        (CASE WHEN YEAR(STR_TO_DATE(u.birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
+        }
+        $selectWeightPoint .= '+ (CASE WHEN u.country = "' . $user->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
 
+        $query = DB::table('customers as u')
+            ->select('u.*', 's.status')
+            ->selectRaw($selectWeightPoint)
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->where('s.matching_id', '=', $user_id)
+            ->where('s.status', '=', config('constant.suggest.status.liked'))->orderBy('s.updated_at', 'ASC')
+            ->orderBy('weightPoint', 'DESC');
         if ($limit) {
             $query->limit($limit);
         }
@@ -124,45 +142,20 @@ class SuggestQModel extends Model
     /**
      * get_current_suggest
      * @param $user_id
-     * @param $status array
-     * @param $suggest_at
-     * @return user
+     * @param $limit
+     * @return customer
      */
-    public static function get_current_suggest($user_id, $suggest_list, $suggest_at, $limit) {
-        $suggests = [];
-
+    public static function get_current_suggest($user_id, $limit, $list_suggest)
+    {
+        $list_suggest = json_decode($list_suggest);
+        $list_suggest_text = implode(',', $list_suggest);
         // get user like me in $suggest_list
-        $users_like_me = DB::table('customers as u')
-                ->select('u.*', 's.status')
-                ->join('suggests as s', 's.user_id', '=', 'u.id')
-                ->where('s.matching_id', '=', $user_id)
-                ->where('s.status', '=', config('constant.suggest.status.liked'))
-                ->whereIn('u.id', $suggest_list)
-                ->limit($limit)
-                ->get();
-
-        foreach ($users_like_me as $item) {
-            array_push($suggests, $item);
-        }
-
-        if (count($suggests) < $limit) {
-            // get suggest me today
-            $users_suggest_me = DB::table('customers as u')
-                    ->select('u.*', 's.status')
-                    ->join('suggests as s', 's.matching_id', '=', 'u.id')
-                    ->where('s.user_id', '=', $user_id)
-                    ->where('s.status', '=', config('constant.suggest.status.suggested'))
-                    ->where('s.created_at', '=', $suggest_at)
-                    ->whereIn('u.id', $suggest_list)
-                    ->limit($limit - count($suggests))
-                    ->get();
-
-            foreach ($users_suggest_me as $item) {
-                array_push($suggests, $item);
-            }
-        }
-
-        return $suggests;
+        return DB::table('customers as u')
+            ->select('u.*')
+            ->whereIn('id', $list_suggest)
+            ->orderByRaw("FIELD(id, " . $list_suggest_text . ")")
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -172,7 +165,8 @@ class SuggestQModel extends Model
      * @param $suggests array
      * @return user
      */
-    public static function get_new_suggest($user, $person_friends, $suggests) {
+    public static function get_new_suggest($user, $person_friends, $suggests)
+    {
         $friends = $user->_friend ? json_decode($user->_friend) : [];
 
         // get all user matching from table suggest
@@ -186,9 +180,9 @@ class SuggestQModel extends Model
         $result = DB::table('customers')
             ->select('*')
             ->where('id', '!=', $user->id)
-            ->where(function($query) use ($user) {
+            ->where(function ($query) use ($user) {
                 $query->where('gender', '!=', $user->gender)
-                ->orWhere('gender', '=', null);
+                    ->orWhere('gender', '=', null);
             })
             ->where('country', '=', $user->country)
             ->whereIn('facebook_id', $person_friends)
@@ -208,7 +202,8 @@ class SuggestQModel extends Model
      * @param $status
      * @return user
      */
-    public static function get_record_by_status($user_id, $matching_id, $status) {
+    public static function get_record_by_status($user_id, $matching_id, $status)
+    {
         return DB::table('suggests')
             ->select('*')
             ->where('user_id', '=', $user_id)
@@ -222,12 +217,14 @@ class SuggestQModel extends Model
      * @param $user_id
      * @return user
      */
-    public static function get_list_matching($user_id) {
+    public static function get_list_matching($user_id)
+    {
         $result = [];
         // case 1
         $list = DB::table('suggests')
             ->select('matching_id')
             ->where('user_id', '=', $user_id)
+            ->where('status', '=', $user_id)
             ->get();
 
         foreach ($list as $item) {
@@ -253,15 +250,17 @@ class SuggestQModel extends Model
      * @param $discover_at
      * @return user
      */
-    public static function get_current_discover($user_id, $discover_at) {
+    public static function get_current_discover($user_id, $discover_at)
+    {
         // get user like me in $suggest_list
         return DB::table('customers as u')
-                ->select('u.*', 's.status')
-                ->join('suggests as s', 's.matching_id', '=', 'u.id')
-                ->where('s.user_id', '=', $user_id)
-                ->where('s.status', '=', config('constant.suggest.status.discover'))
-                ->limit(config('constant.suggest.limit'))
-                ->get();
+            ->select('u.*', 's.status')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
+            ->where('s.user_id', '=', $user_id)
+            ->where('s.status', '=', config('constant.suggest.status.discover'))
+            ->limit(config('constant.suggest.limit'))
+            ->orderByRaw("s.id ASC")
+            ->get();
     }
 
     /**
@@ -269,15 +268,16 @@ class SuggestQModel extends Model
      * @param $user object
      * @return users
      */
-    public static function get_new_discover($user) {
+    public static function get_new_discover($user)
+    {
         // get all user matching from table suggest
         $user_matching_ids = self::get_list_matching($user->id);
         $result = DB::table('customers')
             ->select('*')
             ->where('id', '!=', $user->id)
-            ->where(function($query) use ($user) {
+            ->where(function ($query) use ($user) {
                 $query->where('gender', '!=', $user->gender)
-                ->orWhere('gender', '=', null);
+                    ->orWhere('gender', '=', null);
             })
             ->where('country', '=', $user->country)
             ->whereNotIn('id', $user_matching_ids)
@@ -287,4 +287,17 @@ class SuggestQModel extends Model
 
         return $result;
     }
+
+    public static function get_react_user($user_id)
+    {
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $query = DB::table('customers as u')
+            ->select('u.*', 's.status')
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->where('s.user_id', '=', $user_id)
+            ->whereIn('s.status', $array_reacted);
+
+        return $query->get()->pluck('id')->toArray();
+    }
+
 }

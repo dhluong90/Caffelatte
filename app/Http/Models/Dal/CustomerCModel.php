@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class CustomerCModel extends Model
 {
 
+    protected $table = 'customers';
     /**
      * sign_up
      * @param $data
