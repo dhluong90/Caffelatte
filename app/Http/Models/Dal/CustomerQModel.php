@@ -9,6 +9,7 @@ use App\Http\Helpers\Constants;
 class CustomerQModel extends Model
 {
 
+    protected $table = 'customers';
     /**
      * get_user_by_facebook_id
      * @param $facebook_id

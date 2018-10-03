@@ -24,7 +24,6 @@ use \Firebase\JWT\JWT;
 use Yish\Imgur\Facades\Upload as Imgur;
 
 
-
 /**
  * Class CustomerController
  * @package App\Http\Controllers\Api
@@ -40,16 +39,19 @@ class CustomerController extends Controller
     {
 
     }
+
     public $ruleUpdateUser = [
-        'phone'=>'sometimes|required|regex:/^\(?\+?([0-9]{1,4})\)?[-\. ]?(\d{3})[-\. ]?([0-9]{7})$/',
-        'email'=>'sometimes|required|email'
+        'phone' => 'sometimes|required|regex:/^\(?\+?([0-9]{1,4})\)?[-\. ]?(\d{3})[-\. ]?([0-9]{7})$/',
+        'email' => 'sometimes|required|email'
     ];
 
-    public function index() {
+    public function index()
+    {
 
     }
 
-    public function profile(Request $request, $id) {
+    public function profile(Request $request, $id)
+    {
         $user = CustomerQModel::get_user_by_id($id);
 
         if (!$user) {
@@ -68,7 +70,8 @@ class CustomerController extends Controller
      * @param $id
      * @return \App\Http\Helpers\json
      */
-    public function profile_by_chat_id (Request $request, $textId) {
+    public function profile_by_chat_id(Request $request, $textId)
+    {
         $listId = explode(",", $textId);
         $user = CustomerQModel::get_users_by_chat_id($listId);
         if (!$user) {
@@ -82,7 +85,8 @@ class CustomerController extends Controller
         return ApiHelper::success($user);
     }
 
-    public function update(Request $request) {
+    public function update(Request $request)
+    {
         $user_id = $request->input('user_id');
         $data = [];
         if ($request->input('gender') || $request->input('gender') === 0) {
@@ -169,7 +173,7 @@ class CustomerController extends Controller
                     'param height wrong',
                     400
                 );
-            } 
+            }
         }
 
         $validation = Validator::make($data, $this->ruleUpdateUser);
@@ -205,7 +209,8 @@ class CustomerController extends Controller
         return ApiHelper::success(['message' => 'success']);
     }
 
-    public function like(Request $request) {
+    public function like(Request $request)
+    {
         $user_id = $request->input('user_id');
         $matching_id = $request->input('matching_id');
 
@@ -240,13 +245,13 @@ class CustomerController extends Controller
             // todo realtime
             if ($user_current->fcm_token) {
                 $result = NotificationHelper::send($user_matching->fcm_token, [
-                        'title' => 'Cafelatte',
-                        'body' => $user_current->name . ' like you'
-                    ], [
-                        'chat_id' => $user_current->chat_id,
-                        'matching_chat_id' => $user_matching->chat_id,
-                        'type' => 'like'
-                    ]);
+                    'title' => 'Cafelatte',
+                    'body' => $user_current->name . ' like you'
+                ], [
+                    'chat_id' => $user_current->chat_id,
+                    'matching_chat_id' => $user_matching->chat_id,
+                    'type' => 'like'
+                ]);
             }
 
             return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
@@ -297,7 +302,8 @@ class CustomerController extends Controller
         );
     }
 
-    public function pass(Request $request) {
+    public function pass(Request $request)
+    {
         $user_id = $request->input('user_id');
         $matching_id = $request->input('matching_id');
 
@@ -346,7 +352,8 @@ class CustomerController extends Controller
         return ApiHelper::error();
     }
 
-    public function unmatch(Request $request) {
+    public function unmatch(Request $request)
+    {
         $user_id = $request->input('user_id');
         $matching_id = $request->input('matching_id');
 
@@ -378,7 +385,8 @@ class CustomerController extends Controller
         return ApiHelper::success(['message' => 'success']);
     }
 
-    public function list_unmatch(Request $request) {
+    public function list_unmatch(Request $request)
+    {
         $user_id = $request->input('user_id');
 
         $list = SuggestQModel::get_list_unmatch_by_user_id($user_id);
@@ -390,7 +398,8 @@ class CustomerController extends Controller
         return ApiHelper::success($list);
     }
 
-    public function suggest(Request $request) {
+    public function suggest(Request $request)
+    {
         $current_time = time();
         // test
         if ($request->input('time')) {
@@ -401,65 +410,79 @@ class CustomerController extends Controller
 
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
+        $react = SuggestQModel::get_react_user($user->id);
 
         if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
-            $result = SuggestQModel::get_current_suggest($user_id, json_decode($user->_suggested), $user->suggest_at, config('constant.suggest.limit'));
-
-            return ApiHelper::success($result);
+            $result = SuggestQModel::get_current_suggest($user_id, config('constant.suggest.limit'), $user->_suggested);
         } else {
             // get friend from table user
             $friends = $user->_friend ? json_decode($user->_friend) : [];
-            $friends_temp = $friends;
 
             // remove old suggest (not like, pass)
             SuggestCModel::reset_suggest($user_id);
 
             // get user like me to suggest
-            $users_like_me = SuggestQModel::get_users_like_me($user_id, config('constant.suggest.limit'));
-            foreach ($users_like_me as $item) {
-                array_push($suggests, $item);
+            $users_like_me = SuggestQModel::get_users_like_me($user_id, 30, $user);
+            $user_like_me_ids = $users_like_me->pluck('id')->toArray();
+
+            $suggests = array_merge($suggests, $user_like_me_ids);
+            $txtFriends = implode(",", $friends);
+            $listFriend = CustomerCModel::whereRaw('facebook_id IN (' . $txtFriends . ')')->get();
+            $friend_ids = $listFriend->pluck('id')->toArray();
+
+            $friend_of_friends = $listFriend->pluck('_friend');
+            $friend_of_friend_merge = [];
+            foreach ($friend_of_friends as $i => $friends) {
+                $friend_of_friends[$i] = json_decode($friends);
+                $friend_of_friend_merge = array_merge($friend_of_friend_merge, json_decode($friends));
             }
+            $friend_of_friend_merge = array_unique($friend_of_friend_merge);
+            $friend_of_friend_merge_text = implode(",", $friend_of_friend_merge);
 
-            // get new matching
-            while (count($friends_temp) > 0 && count($suggests) < config('constant.suggest.limit')) {
-                // get random 1 friend of friends
-                $index = array_rand($friends_temp);
-                $person_facebook_id = $friends_temp[$index];
-                unset($friends_temp[$index]); // remove this friend
-
-                // get list friend of this person
-                $person = CustomerQModel::get_user_by_facebook_id($person_facebook_id);
-                if ($person) {
-                    $person_friends = $person->_friend ? json_decode($person->_friend) : [];
-
-                    $result = SuggestQModel::get_new_suggest($user, $person_friends, $suggests);
-
-                    foreach ($result as $item) {
-                        if (count($suggests) < config('constant.suggest.limit')) {
-                            array_push($suggests, $item);
-                        }
-                    }
-                }
+            $selectWeightPoint = '(
+                        
+                        (CASE WHEN city = "' . $user->city . '" THEN 3 ELSE 0 END)';
+            if ($user->birthday) {
+                $selectWeightPoint .= '  + 
+                        (CASE WHEN YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
             }
+            $selectWeightPoint .= '+ (CASE WHEN country = "' . $user->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
+
+            $listFriendOfFriends = CustomerCModel::select('*')->selectRaw($selectWeightPoint)->whereRaw('facebook_id IN (' . $friend_of_friend_merge_text . ')')
+                ->whereNotIn('id', $friend_ids)
+                ->whereNotIn('id', $suggests)
+                ->whereNotIn('id', $react)
+                ->orderByRaw('weightPoint DESC')
+                ->get();
+            $listFriendOfFriendIds = $listFriendOfFriends->pluck('id')->toArray();
+
+            $suggests = array_merge($suggests, $listFriendOfFriendIds);
+            // get profile by city
+            $suggests = $this->getProfileByCity($suggests, $user, $react);
+            // get profile by country
+            $suggests = $this->getProfileByCountry($suggests, $user, $react);
+
+            // get profile by birthday
+            $suggests = $this->getProfileByBirthday($suggests, $user, $react);
+
+            // get random profile
+            $suggests = $this->getRandomProfile($suggests, $user, $react);
 
             if (!empty($suggests)) {
                 $data = [];
                 $matching_ids = [];
                 foreach ($suggests as $item) {
-                    array_push($matching_ids, $item->id);
+                    array_push($matching_ids, $item);
 
                     // if new suggest
-                    if (empty($item->status)) {
-                        array_push($data, [
-                            'user_id' => $user_id,
-                            'matching_id' => $item->id,
-                            'status' => config('constant.suggest.status.suggested'),
-                            'created_at' => date('Y-m-d', $current_time)
-                        ]);
-                    }
+                    array_push($data, [
+                        'user_id' => $user_id,
+                        'matching_id' => $item,
+                        'status' => config('constant.suggest.status.suggested'),
+                        'created_at' => date('Y-m-d', $current_time)
+                    ]);
                 }
-
                 // save list suggest table suggest (get list suggest not like me)
                 if (!empty($data)) {
                     SuggestCModel::create_suggest($data);
@@ -471,12 +494,14 @@ class CustomerController extends Controller
                     'suggest_at' => date('Y-m-d', $current_time)
                 ]);
             }
+            $result = SuggestQModel::get_current_suggest($user_id, config('constant.suggest.limit'), $user->_suggested);
         }
 
-        return ApiHelper::success($suggests);
+        return ApiHelper::success($result);
     }
 
-    public function discover(Request $request) {
+    public function discover(Request $request)
+    {
         $current_time = time();
         // test
         if ($request->input('time')) {
@@ -489,23 +514,35 @@ class CustomerController extends Controller
         $user = CustomerQModel::get_user_by_id($user_id);
 
         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
-            // get user in field suggested
+//            // get user in field suggested
             $result = SuggestQModel::get_current_discover($user_id, $user->discover_at);
 
             return ApiHelper::success($result);
         } else {
             // remove old discover yesterday
             SuggestCModel::reset_discover($user_id);
-
+            $suggestId = [];
+            $react = SuggestQModel::get_list_matching($user->id);
             // get new discover
-            $result = SuggestQModel::get_new_discover($user);
+//            $result = SuggestQModel::get_new_discover($user);
 
-            if (!empty($result)) {
+            // get profile by city
+            $suggestId = $this->getProfileByCity($suggestId, $user, $react);
+            // get profile by country
+            $suggestId = $this->getProfileByCountry($suggestId, $user, $react);
+
+            // get profile by birthday
+            $suggestId = $this->getProfileByBirthday($suggestId, $user, $react);
+
+            // get random profile
+            $suggestId = $this->getRandomProfile($suggestId, $user, $react);
+
+            if (!empty($suggestId)) {
                 $data = [];
-                foreach ($result as $item) {
+                foreach ($suggestId as $item) {
                     array_push($data, [
                         'user_id' => $user_id,
-                        'matching_id' => $item->id,
+                        'matching_id' => $item,
                         'status' => config('constant.suggest.status.discover'),
                         'created_at' => date('Y-m-d', $current_time)
                     ]);
@@ -521,6 +558,8 @@ class CustomerController extends Controller
                     'discover_at' => date('Y-m-d', $current_time)
                 ]);
 
+                $result = SuggestQModel::get_current_discover($user_id, date('Y-m-d', $current_time));
+
                 return ApiHelper::success($result);
             }
         }
@@ -528,7 +567,8 @@ class CustomerController extends Controller
         return ApiHelper::success($suggests);
     }
 
-    public function manual_friend(Request $request, $id) {
+    public function manual_friend(Request $request, $id)
+    {
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
         $my_friend = CustomerQModel::get_user_by_id($id);
@@ -539,7 +579,8 @@ class CustomerController extends Controller
         return ApiHelper::success($result);
     }
 
-    public function push_user(Request $request, $matching_id) {
+    public function push_user(Request $request, $matching_id)
+    {
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
         $user_matching = CustomerQModel::get_user_by_id($matching_id);
@@ -548,13 +589,14 @@ class CustomerController extends Controller
         $body = $request->input('body');
         $data = $request->input('data');
         $result = NotificationHelper::send($user_matching->fcm_token, [
-                'title' => $title,
-                'body' => $body
-            ], $data);
+            'title' => $title,
+            'body' => $body
+        ], $data);
         return ApiHelper::success(['message' => 'success']);
     }
 
-    public function add_point(Request $request) {
+    public function add_point(Request $request)
+    {
         $current_time = time();
         // test
         if ($request->input('time')) {
@@ -591,7 +633,8 @@ class CustomerController extends Controller
         }
     }
 
-    public function upload_avatar(Request $request) {
+    public function upload_avatar(Request $request)
+    {
         $rules = array(
             'image' => 'required | mimes:jpeg,jpg,png',
             'location' => 'required'
@@ -639,7 +682,8 @@ class CustomerController extends Controller
         return ApiHelper::success(['message' => 'upload image success']);
     }
 
-    public function delete_avatar(Request $request) {
+    public function delete_avatar(Request $request)
+    {
         $rules = array(
             'location' => 'required'
         );
@@ -663,6 +707,197 @@ class CustomerController extends Controller
         ]);
 
         return ApiHelper::success(['message' => 'upload image success']);
+    }
+
+    /**
+     * @param $suggestId
+     * @param $suggest
+     * @param $profile
+     * @param $react
+     * @param $user
+     * @return array
+     */
+    protected function getProfileByLikedOrMutualFriend($suggestId, $suggest, $profile, $react, $user)
+    {
+        if (!empty($suggest)) {
+
+            $listMutualFriend = $suggest->mutual_friends;
+            $mutualFriendId = '0';
+            if (!empty($listMutualFriend)) {
+                $mutualFriendId = implode(",", $listMutualFriend);
+            }
+
+            $selectWeightPoint = '(
+                        (CASE WHEN id IN  (' . $mutualFriendId . ') THEN 5 ELSE 0 END) +
+                        (CASE WHEN city = "' . $profile->city . '" THEN 3 ELSE 0 END)';
+            if ($profile->birthday) {
+                $selectWeightPoint .= '  + 
+                        (CASE WHEN YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
+            }
+            $selectWeightPoint .= '+ (CASE WHEN country = "' . $profile->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
+
+            if (count($suggestId) < 30) {
+                $listLiked = $suggest->liked;
+                $listLikedOrder = CustomerQModel::select('id')->selectRaw(
+                    $selectWeightPoint
+                )
+                    ->whereIn('id', $listLiked)
+                    ->whereNotIn('id', $react)
+                    ->whereNotIn('id', $suggestId)
+                    ->orderBy('weightPoint', 'DESC');
+                if ($profile->birthday) {
+                    $listLikedOrder = $listLikedOrder->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+                }
+
+                $listLikedOrder = $listLikedOrder->limit(30)
+                    ->get()
+                    ->pluck('id');
+                $suggestId = $this->addUserIdToUserList($listLikedOrder, $user->id, $suggestId);
+            }
+
+            if (count($suggestId) < 30) {
+                $listMutualFriendSuggest = CustomerQModel::select('id')->selectRaw($selectWeightPoint)
+                    ->whereIn('id', $listMutualFriend)
+                    ->whereNotIn('id', $react)
+                    ->whereNotIn('id', $suggestId)
+                    ->orderBy('weightPoint', 'DESC');
+                if ($profile->birthday) {
+                    $listMutualFriendSuggest = $listMutualFriendSuggest->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+                }
+
+                $listMutualFriendSuggest = $listMutualFriendSuggest->limit(30)
+                    ->get()
+                    ->pluck('id');
+                $suggestId = $this->addUserIdToUserList($listMutualFriendSuggest, $user->id, $suggestId);
+            }
+
+
+        }
+        return $suggestId;
+    }
+
+    /**
+     * @param $suggestId
+     * @param $profile
+     * @param $react
+     * @param $user
+     * @return array
+     */
+    protected function getProfileByCity($suggestId, $profile, $react)
+    {
+        if (count($suggestId) < 30 && $profile->city) {
+            $listIdProfileInCity = CustomerQModel::select('id')
+                ->where('city', $profile->city)
+                ->where('id', '<>', $profile->id)
+                ->whereNotIn('id', $react)
+                ->whereNotIn('id', $suggestId);
+            if ($profile->birthday) {
+                $listIdProfileInCity = $listIdProfileInCity->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+            }
+            $listIdProfileInCity = $listIdProfileInCity
+                ->limit(30)
+                ->get()
+                ->pluck('id');
+            if ($listIdProfileInCity) {
+                $suggestId = $this->addUserIdToUserList($listIdProfileInCity, $profile->id, $suggestId);
+            }
+        }
+        return $suggestId;
+    }
+
+    /**
+     * @param $suggestId
+     * @param $profile
+     * @param $react
+     * @param $user
+     * @return array
+     */
+    protected function getProfileByCountry($suggestId, $profile, $react)
+    {
+        if (count($suggestId) < 30 && $profile->country) {
+            $listIdProfileInCountry = CustomerQModel::select('id')
+                ->where('country', $profile->country)
+                ->where('id', '<>', $profile->id)
+                ->whereNotIn('id', $react)
+                ->whereNotIn('id', $suggestId);
+            if ($profile->birthday) {
+                $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+            }
+
+            $listIdProfileInCountry = $listIdProfileInCountry->limit(30)
+                ->get()->pluck('id');
+            if ($listIdProfileInCountry) {
+                $suggestId = $this->addUserIdToUserList($listIdProfileInCountry, $profile->id, $suggestId);
+            }
+        }
+        return $suggestId;
+    }
+
+    /**
+     * @param $suggestId
+     * @param $profile
+     * @param $react
+     * @param $user
+     * @return array
+     */
+    protected function getProfileByBirthday($suggestId, $profile, $react)
+    {
+        if (count($suggestId) < 30 && $profile->birthday) {
+            $listInAgeRange = CustomerQModel::select('id')
+                ->whereRaw('YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) + 5 ')
+                ->whereNotIn('id', $react)
+                ->whereNotIn('id', $suggestId)
+                ->where('id', '<>', $profile->id)
+                ->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC')
+                ->limit(30)
+                ->get()->pluck('id');
+            if ($listInAgeRange) {
+                $suggestId = $this->addUserIdToUserList($listInAgeRange, $profile->id, $suggestId);
+            }
+        }
+        return $suggestId;
+    }
+
+    /**
+     * @param $suggestId
+     * @param $profile
+     * @param $react
+     * @param $user
+     * @return array
+     */
+    protected function getRandomProfile($suggestId, $profile, $react)
+    {
+        if (count($suggestId) < 30) {
+            $listRandomId = CustomerQModel::select('customers.id')
+                ->whereNotIn('customers.id', $react)
+                ->whereNotIn('customers.id', $suggestId)
+                ->where('customers.id', '<>', $profile->id)
+                ->limit(30)
+                ->get()->pluck('id');
+            if ($listRandomId) {
+                $suggestId = $this->addUserIdToUserList($listRandomId, $profile->id, $suggestId);
+            }
+        }
+
+        return $suggestId;
+
+    }
+
+    /**
+     * @param $idList
+     * @param $idUser
+     * @param $suggestId
+     * @return array
+     */
+    protected function addUserIdToUserList($idList, $idUser, $suggestId)
+    {
+        foreach ($idList as $k => $id) {
+            if ($id != $idUser) {
+                $suggestId[] = $id;
+            }
+//            if (count($suggestId) == 3) break;
+        }
+        return $suggestId;
     }
 
 }

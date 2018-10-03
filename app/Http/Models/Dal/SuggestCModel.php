@@ -63,4 +63,5 @@ class SuggestCModel extends Model
                 ->whereIn('status', [config('constant.suggest.status.discover')])
                 ->delete();
     }
+
 }
