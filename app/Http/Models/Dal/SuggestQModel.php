@@ -149,6 +149,7 @@ class SuggestQModel extends Model
     {
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         $list_suggest = json_decode($list_suggest);
+
         $list_suggest_text = implode(',', $list_suggest);
         // get user like me in $suggest_list
         return DB::table('customers as u')

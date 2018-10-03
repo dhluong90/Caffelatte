@@ -414,7 +414,7 @@ class CustomerController extends Controller
 
         if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
-            $result = SuggestQModel::get_current_suggest($user_id, config('constant.suggest.limit'), $user->_suggested);
+            $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested);
         } else {
             // get friend from table user
             $friends = $user->_friend ? json_decode($user->_friend) : [];
@@ -499,7 +499,7 @@ class CustomerController extends Controller
                     'suggest_at' => date('Y-m-d', $current_time)
                 ]);
             }
-            $result = SuggestQModel::get_current_suggest($user_id, config('constant.suggest.limit'), $user->_suggested);
+            $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested);
         }
 
         return ApiHelper::success($result);
