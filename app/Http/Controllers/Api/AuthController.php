@@ -135,10 +135,6 @@ class AuthController extends Controller
 
                 $user_id = CustomerCModel::create_user($data);
 
-                foreach ($friends as $friend_id) {
-
-                }
-
                 // setup jwt to update token
                 $jwt = [
                     'id' => $user_id,
