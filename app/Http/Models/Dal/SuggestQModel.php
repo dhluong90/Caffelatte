@@ -145,14 +145,16 @@ class SuggestQModel extends Model
      * @param $limit
      * @return customer
      */
-    public static function get_current_suggest($user_id, $limit, $list_suggest)
+    public static function get_current_suggest($limit, $list_suggest)
     {
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         $list_suggest = json_decode($list_suggest);
         $list_suggest_text = implode(',', $list_suggest);
         // get user like me in $suggest_list
         return DB::table('customers as u')
             ->select('u.*')
             ->whereIn('id', $list_suggest)
+            ->whereNotIn('id', $array_reacted)
             ->orderByRaw("FIELD(id, " . $list_suggest_text . ")")
             ->limit($limit)
             ->get();

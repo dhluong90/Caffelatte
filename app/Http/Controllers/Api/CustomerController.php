@@ -709,72 +709,7 @@ class CustomerController extends Controller
         return ApiHelper::success(['message' => 'upload image success']);
     }
 
-    /**
-     * @param $suggestId
-     * @param $suggest
-     * @param $profile
-     * @param $react
-     * @param $user
-     * @return array
-     */
-    protected function getProfileByLikedOrMutualFriend($suggestId, $suggest, $profile, $react, $user)
-    {
-        if (!empty($suggest)) {
 
-            $listMutualFriend = $suggest->mutual_friends;
-            $mutualFriendId = '0';
-            if (!empty($listMutualFriend)) {
-                $mutualFriendId = implode(",", $listMutualFriend);
-            }
-
-            $selectWeightPoint = '(
-                        (CASE WHEN id IN  (' . $mutualFriendId . ') THEN 5 ELSE 0 END) +
-                        (CASE WHEN city = "' . $profile->city . '" THEN 3 ELSE 0 END)';
-            if ($profile->birthday) {
-                $selectWeightPoint .= '  + 
-                        (CASE WHEN YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
-            }
-            $selectWeightPoint .= '+ (CASE WHEN country = "' . $profile->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
-
-            if (count($suggestId) < 30) {
-                $listLiked = $suggest->liked;
-                $listLikedOrder = CustomerQModel::select('id')->selectRaw(
-                    $selectWeightPoint
-                )
-                    ->whereIn('id', $listLiked)
-                    ->whereNotIn('id', $react)
-                    ->whereNotIn('id', $suggestId)
-                    ->orderBy('weightPoint', 'DESC');
-                if ($profile->birthday) {
-                    $listLikedOrder = $listLikedOrder->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
-                }
-
-                $listLikedOrder = $listLikedOrder->limit(30)
-                    ->get()
-                    ->pluck('id');
-                $suggestId = $this->addUserIdToUserList($listLikedOrder, $user->id, $suggestId);
-            }
-
-            if (count($suggestId) < 30) {
-                $listMutualFriendSuggest = CustomerQModel::select('id')->selectRaw($selectWeightPoint)
-                    ->whereIn('id', $listMutualFriend)
-                    ->whereNotIn('id', $react)
-                    ->whereNotIn('id', $suggestId)
-                    ->orderBy('weightPoint', 'DESC');
-                if ($profile->birthday) {
-                    $listMutualFriendSuggest = $listMutualFriendSuggest->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
-                }
-
-                $listMutualFriendSuggest = $listMutualFriendSuggest->limit(30)
-                    ->get()
-                    ->pluck('id');
-                $suggestId = $this->addUserIdToUserList($listMutualFriendSuggest, $user->id, $suggestId);
-            }
-
-
-        }
-        return $suggestId;
-    }
 
     /**
      * @param $suggestId
