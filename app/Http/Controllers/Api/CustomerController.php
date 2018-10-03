@@ -428,6 +428,9 @@ class CustomerController extends Controller
 
             $suggests = array_merge($suggests, $user_like_me_ids);
             $txtFriends = implode(",", $friends);
+            if (!$txtFriends) {
+                $txtFriends = '0';
+            }
             $listFriend = CustomerCModel::whereRaw('facebook_id IN (' . $txtFriends . ')')->get();
             $friend_ids = $listFriend->pluck('id')->toArray();
 
@@ -439,7 +442,9 @@ class CustomerController extends Controller
             }
             $friend_of_friend_merge = array_unique($friend_of_friend_merge);
             $friend_of_friend_merge_text = implode(",", $friend_of_friend_merge);
-
+            if (!$friend_of_friend_merge_text) {
+                $friend_of_friend_merge_text = '0';
+            }
             $selectWeightPoint = '(
                         
                         (CASE WHEN city = "' . $user->city . '" THEN 3 ELSE 0 END)';
@@ -708,7 +713,6 @@ class CustomerController extends Controller
 
         return ApiHelper::success(['message' => 'upload image success']);
     }
-
 
 
     /**
