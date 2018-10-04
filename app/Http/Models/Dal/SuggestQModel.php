@@ -130,7 +130,8 @@ class SuggestQModel extends Model
             ->selectRaw($selectWeightPoint)
             ->join('suggests as s', 's.user_id', '=', 'u.id')
             ->where('s.matching_id', '=', $user_id)
-            ->where('s.status', '=', config('constant.suggest.status.liked'))->orderBy('s.updated_at', 'ASC')
+            ->where('s.status', '=', config('constant.suggest.status.liked'))
+            ->orderBy('s.updated_at', 'ASC')
             ->orderBy('weightPoint', 'DESC');
         if ($limit) {
             $query->limit($limit);

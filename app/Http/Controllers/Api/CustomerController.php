@@ -527,7 +527,7 @@ class CustomerController extends Controller
             // remove old discover yesterday
             SuggestCModel::reset_discover($user_id);
             $suggestId = [];
-            $react = SuggestQModel::get_list_matching($user->id);
+            $react = SuggestQModel::get_react_user($user->id);
             // get new discover
 //            $result = SuggestQModel::get_new_discover($user);
 
