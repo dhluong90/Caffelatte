@@ -411,6 +411,7 @@ class CustomerController extends Controller
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
         $react = SuggestQModel::get_react_user($user->id);
+        $react[] = $user_id;
 
         if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
@@ -528,6 +529,7 @@ class CustomerController extends Controller
             SuggestCModel::reset_discover($user_id);
             $suggestId = [];
             $react = SuggestQModel::get_react_user($user->id);
+            $react[] = $user_id;
             // get new discover
 //            $result = SuggestQModel::get_new_discover($user);
 
