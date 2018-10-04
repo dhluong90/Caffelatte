@@ -297,9 +297,10 @@ class SuggestQModel extends Model
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         $query = DB::table('customers as u')
             ->select('u.*', 's.status')
-            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('s.status', $array_reacted);
+
 
         return $query->get()->pluck('id')->toArray();
     }
