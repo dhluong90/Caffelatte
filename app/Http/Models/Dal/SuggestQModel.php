@@ -130,6 +130,7 @@ class SuggestQModel extends Model
             ->selectRaw($selectWeightPoint)
             ->join('suggests as s', 's.user_id', '=', 'u.id')
             ->where('s.matching_id', '=', $user_id)
+            ->where('u.gender', '<>', $user->gender)
             ->where('s.status', '=', config('constant.suggest.status.liked'))
             ->orderBy('s.updated_at', 'ASC')
             ->orderBy('weightPoint', 'DESC');
@@ -261,12 +262,12 @@ class SuggestQModel extends Model
     {
         // get user like me in $suggest_list
         return DB::table('customers as u')
-            ->select('u.*', 's.status')
+            ->select('u.*', 's.id as suggest_id','s.status')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->where('s.status', '=', config('constant.suggest.status.discover'))
             ->limit(config('constant.suggest.limit'))
-            ->orderByRaw("s.id ASC")
+            ->orderByRaw("suggest_id ASC")
             ->distinct()
             ->get();
     }
