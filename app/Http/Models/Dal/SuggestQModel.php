@@ -161,6 +161,7 @@ class SuggestQModel extends Model
             ->whereNotIn('s.status', $array_reacted)
             ->orderByRaw("FIELD(u.id, " . $list_suggest_text . ")")
             ->limit($limit)
+            ->distinct()
             ->get();
     }
 
@@ -266,6 +267,7 @@ class SuggestQModel extends Model
             ->where('s.status', '=', config('constant.suggest.status.discover'))
             ->limit(config('constant.suggest.limit'))
             ->orderByRaw("s.id ASC")
+            ->distinct()
             ->get();
     }
 
