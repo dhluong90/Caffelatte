@@ -415,7 +415,7 @@ class CustomerController extends Controller
 
         if (!empty($user->suggest_at) && $user->suggest_at == date('Y-m-d', $current_time)) {
             // get user in field suggested
-            $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested);
+            $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested, $user_id);
         } else {
             // get friend from table user
             $friends = $user->_friend ? json_decode($user->_friend) : [];
@@ -459,6 +459,7 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $friend_ids)
                 ->whereNotIn('id', $suggests)
                 ->whereNotIn('id', $react)
+                ->where('gender', '<>', $user->gender)
                 ->orderByRaw('weightPoint DESC')
                 ->get();
             $listFriendOfFriendIds = $listFriendOfFriends->pluck('id')->toArray();
@@ -500,7 +501,7 @@ class CustomerController extends Controller
                     'suggest_at' => date('Y-m-d', $current_time)
                 ]);
             }
-            $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested);
+            $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested, $user_id);
         }
 
         return ApiHelper::success($result);
@@ -731,7 +732,8 @@ class CustomerController extends Controller
                 ->where('city', $profile->city)
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
-                ->whereNotIn('id', $suggestId);
+                ->whereNotIn('id', $suggestId)
+                ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCity = $listIdProfileInCity->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
             }
@@ -760,7 +762,8 @@ class CustomerController extends Controller
                 ->where('country', $profile->country)
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
-                ->whereNotIn('id', $suggestId);
+                ->whereNotIn('id', $suggestId)
+                ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
             }
@@ -789,6 +792,7 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
                 ->where('id', '<>', $profile->id)
+                ->where('gender', '<>', $profile->gender)
                 ->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC')
                 ->limit(30)
                 ->get()->pluck('id');
@@ -813,6 +817,7 @@ class CustomerController extends Controller
                 ->whereNotIn('customers.id', $react)
                 ->whereNotIn('customers.id', $suggestId)
                 ->where('customers.id', '<>', $profile->id)
+                ->where('gender', '<>', $profile->gender)
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listRandomId) {
