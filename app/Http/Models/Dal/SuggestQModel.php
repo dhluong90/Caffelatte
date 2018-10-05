@@ -260,12 +260,14 @@ class SuggestQModel extends Model
      */
     public static function get_current_discover($user_id, $discover_at)
     {
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         // get user like me in $suggest_list
         return DB::table('customers as u')
             ->select('u.*', 's.id as suggest_id','s.status')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->where('s.status', '=', config('constant.suggest.status.discover'))
+            ->whereNotIn('s.status', $array_reacted)
             ->limit(config('constant.suggest.limit'))
             ->orderByRaw("suggest_id ASC")
             ->distinct()

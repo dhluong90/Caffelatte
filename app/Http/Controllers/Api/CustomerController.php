@@ -733,6 +733,7 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->orderByRaw("RAND()")
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCity = $listIdProfileInCity->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
