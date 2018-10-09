@@ -125,6 +125,7 @@ class AuthController extends Controller
                     'name' => $profile['name'],
                     'image' => json_encode(['https://graph.facebook.com/' . $profile['id'] . '/picture?type=large&width=720&height=720']),
                     'facebook_id' => $profile['id'],
+                    'email' => $profile['email'],
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
