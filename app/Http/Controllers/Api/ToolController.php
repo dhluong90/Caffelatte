@@ -6,12 +6,12 @@ use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Http\Helpers\ApiHelper;
-use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\UserCModel;
-use App\Http\Models\Dal\UserQModel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Http\Models\Dal\CustomerQModel;
 
 use Facebook\Facebook;
 
@@ -30,6 +30,7 @@ class ToolController extends Controller
     {
 
     }
+
 
     public function index() {
 
@@ -79,4 +80,5 @@ class ToolController extends Controller
         }
         return ApiHelper::success($user_sucess);
     }
+
 }

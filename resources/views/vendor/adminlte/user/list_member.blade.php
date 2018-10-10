@@ -26,7 +26,7 @@
     <div class="row">
         <div class="form-group pull-right">
             <div class="col-md-12">
-                <a class="btn btn-success export-user-to-excel" href="javascript:;">Xuất dữ liệu</a>
+                <a class="btn btn-success export-user-to-excel" href="{{"/admincp/user/member/export"}}" target="_blank">Xuất dữ liệu</a>
             </div>
         </div>
 
