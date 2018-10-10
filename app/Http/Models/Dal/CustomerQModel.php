@@ -83,6 +83,19 @@ class CustomerQModel extends Model
     }
 
     /**
+     * search user paging
+     * @param $email string
+     * @param $role int
+     * @return array Illuminate\Pagination\LengthAwarePaginator
+     */
+    public static function get_all_user() {
+        return DB::table('customers' .' as c')
+            ->select('c.*')
+            ->orderBy('c.id', 'desc')
+            ->get()->toArray();
+    }
+
+    /**
      * get all customer
      * @return id
      */

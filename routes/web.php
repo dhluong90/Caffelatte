@@ -35,6 +35,7 @@ Route::group(['middleware' => ['auth']], function () {
         // Users
         Route::group(['prefix' => 'user'], function () {
             Route::get('/member', 'Admin\UserController@list_member');
+            Route::get('/member/export', 'Admin\ToolController@export_file_customer_list');
             Route::get('/profile/{user_id}','Admin\UserController@get_user_profile');
             Route::post('/profile/{user_id}/update', 'Admin\UserController@update_user_profile');
             // super admin
