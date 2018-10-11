@@ -29,18 +29,42 @@ class BranchIoController extends Controller {
                     $current_time = time();
                     if ($customer->point_at != date('Y-m-d', $current_time)) {
                         // new date, reset old_point
+                        $log = $customer->point_log;
+                        if (!$log) {
+                            $log = [];
+                        } else {
+                            $log = json_decode($log, true);
+                        }
+                        $log[] = [
+                            'point' => 2,
+                            'created_at' => date('Y-m-d', $current_time)
+                        ];
                         CustomerCModel::update_user($customer->id, [
                             'point' => $customer->point + 2,
-                            'old_point' => 1,
-                            'point_at' => date('Y-m-d', $current_time)
+                            'old_point' => 2,
+                            'point_at' => date('Y-m-d', $current_time),
+                            'point_share'=> $customer->point_share + 2,
+                            'point_log' => json_encode($log, true)
                         ]);
 
                         return ApiHelper::success(['message' => 'success add point new date']);
                     } else {
-                        if ($customer->old_point < 3) {
+                        if ($customer->old_point < 6) {
+                            $log = $customer->point_log;
+                            if (!$log) {
+                                $log = [];
+                            } else {
+                                $log = json_decode($log, true);
+                            }
+                            $log[] = [
+                                'point' => 2,
+                                'created_at' => date('Y-m-d', $current_time)
+                            ];
                             CustomerCModel::update_user($customer->id, [
                                 'point' => $customer->point + 2,
-                                'old_point' => $customer->old_point + 2
+                                'old_point' => $customer->old_point + 2,
+                                'point_share'=> $customer->point_share + 2,
+                                'point_log' => json_encode($log, true)
                             ]);
 
                             return ApiHelper::success(['message' => 'success add point']);

@@ -68,6 +68,7 @@
                                             <th class="sorting_asc" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">Gender</th>
                                             <th class="sorting" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">Phone</th>
                                             <th class="sorting" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">Country</th>
+                                            <th class="sorting" tabindex="0" aria-controls="example2" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">Rewarded Point</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -84,6 +85,7 @@
                                                 <td class="sorting_1">{{ $member->gender != null ? ($member->gender == 1 ? 'Male' : 'Female') : '' }}</td>
                                                 <td class="sorting_1">{{ $member->phone }}</td>
                                                 <td class="">{{ $member->country }}</td>
+                                                <td class="">{{ $member->point_share }}</td>
                                             </tr>
                                         @endforeach
                                         </tbody>
