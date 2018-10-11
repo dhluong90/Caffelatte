@@ -19,3 +19,13 @@
 .detail-store, .detail-food {
 	font-weight: bold;
 }
+.tab-panel-custom label {
+	font-weight: bold;
+}
+.tab-panel-custom span {
+	font-size: 13px;
+}
+
+.full-width {
+	width: 100%;
+}
