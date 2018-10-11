@@ -501,6 +501,7 @@ class CustomerController extends Controller
                     'suggest_at' => date('Y-m-d', $current_time)
                 ]);
             }
+            $user = CustomerQModel::get_user_by_id($user_id);
             $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested, $user_id);
         }
 

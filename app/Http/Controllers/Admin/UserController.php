@@ -37,6 +37,7 @@ class UserController extends Controller
         }
 
         $data['users'] = CustomerQModel::search_user_paging($keyword);
+        $data['keyword'] = $keyword;
         return view('vendor.adminlte.user.list_member', $data);
     }
 
@@ -98,13 +99,17 @@ class UserController extends Controller
      * @param $request Request
      * @return Response
      */
-    public function get_user_profile($user_id, Request $request) {
-        $data['user_profile'] = UserQModel::get_user_by_id($user_id);
-        if (!$data['user_profile'] || !is_numeric($user_id) || $user_id != Auth::id()) {
-            // 404
-            return view('vendor.adminlte.errors.404');
+    public function get_user_profile($customer_id, Request $request) {
+        $profile = CustomerQModel::get_user_by_id($customer_id);
+        if (!$profile) {
+            $request->session()->flash('alert-danger', 'Member is not exist!');
         }
-
+        $list_image = $profile->image;
+        $list_image = json_decode($list_image);
+        $avatar = $list_image[0];
+        $data['profile'] = $profile;
+        $data['avatar'] = $avatar;
+//        dd($profile);
         return view('vendor.adminlte.user.profile', $data);
     }
 

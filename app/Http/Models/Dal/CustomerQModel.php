@@ -63,7 +63,8 @@ class CustomerQModel extends Model
      * returns false if no products is founded
      */
     public static function get_user_by_id($user_id) {
-        return DB::table('customers')
+        return DB::table('customers')->select('*')->selectRaw('ROUND((DATEDIFF(NOW(), STR_TO_DATE( birthday , "%d-%m-%Y" ))/365.25
+)) as age')
                 ->where('id', '=', $user_id)
                 ->first();
     }
@@ -76,7 +77,8 @@ class CustomerQModel extends Model
      */
     public static function search_user_paging($email) {
         return DB::table('customers' .' as c')
-                ->select('c.*')
+                ->select('c.*')->selectRaw('ROUND((DATEDIFF(NOW(), STR_TO_DATE( birthday , "%d-%m-%Y" ))/365.25
+)) as age')
                 ->orderBy('c.id', 'desc')
                 ->where('c.name', 'like', '%' . $email . '%')
                 ->paginate(10);
