@@ -523,7 +523,11 @@ class CustomerController extends Controller
 
         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
 //            // get user in field suggested
-            $result = SuggestQModel::get_current_discover($user_id, $user->discover_at);
+            $suggesting_user = $this->suggest($request);
+            $reacting = $suggesting_user->content();
+            $reacting = json_decode($reacting);
+            $reacting_id = array_column($reacting->data, 'id');
+            $result = SuggestQModel::get_current_discover($user_id, $user->discover_at, $reacting_id);
 
             return ApiHelper::success($result);
         } else {
@@ -532,6 +536,11 @@ class CustomerController extends Controller
             $suggestId = [];
             $react = SuggestQModel::get_react_user($user->id);
             $react[] = $user_id;
+            $suggesting_user = $this->suggest($request);
+            $reacting = $suggesting_user->content();
+            $reacting = json_decode($reacting);
+            $reacting_id = array_column($reacting->data, 'id');
+
             // get new discover
 //            $result = SuggestQModel::get_new_discover($user);
 
@@ -567,7 +576,7 @@ class CustomerController extends Controller
                     'discover_at' => date('Y-m-d', $current_time)
                 ]);
 
-                $result = SuggestQModel::get_current_discover($user_id, date('Y-m-d', $current_time));
+                $result = SuggestQModel::get_current_discover($user_id, date('Y-m-d', $current_time), $reacting_id);
 
                 return ApiHelper::success($result);
             }

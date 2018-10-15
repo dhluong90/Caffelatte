@@ -260,7 +260,7 @@ class SuggestQModel extends Model
      * @param $discover_at
      * @return user
      */
-    public static function get_current_discover($user_id, $discover_at)
+    public static function get_current_discover($user_id, $discover_at, $reacting_id)
     {
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         // get user like me in $suggest_list
@@ -270,6 +270,7 @@ class SuggestQModel extends Model
             ->where('s.user_id', '=', $user_id)
             ->where('s.status', '=', config('constant.suggest.status.discover'))
             ->whereNotIn('s.status', $array_reacted)
+            ->whereNotIn('u.id', $reacting_id)
             ->limit(config('constant.suggest.limit'))
             ->orderByRaw("suggest_id ASC")
             ->distinct()
