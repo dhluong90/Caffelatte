@@ -662,7 +662,7 @@ class CustomerController extends Controller
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.customer.image_error_format'),
-                'validate image, location error',
+                $validator->messages(),
                 400
             );
         }
