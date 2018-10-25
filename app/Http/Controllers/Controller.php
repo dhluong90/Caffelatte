@@ -15,11 +15,4 @@ use View;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    public function __construct() {
-        View::share('ImageHelper', new ImageHelper);
-        View::share('Constants', new Constants);
-        View::share('TimeHelper', new TimeHelper);
-        View::share('YoutubeHelper', new YoutubeHelper);
-    }
 }
