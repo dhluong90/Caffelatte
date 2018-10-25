@@ -15,6 +15,7 @@ use App\Http\Models\Dal\UserQModel;
 use App\Http\Models\Dal\UserCModel;
 use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\CustomerQModel;
+use App\Http\Models\Dal\CustomerCModel;
 use Illuminate\Support\Facades\Input;
 use App\Http\Helpers\Constants;
 
@@ -152,6 +153,23 @@ class UserController extends Controller
             $request->session()->flash('alert-success', 'Thông tin đã được cập nhật thành công!');
             return redirect('admincp/user/profile/'.$user_id);
         } 
+        return back();
+    }
+
+    /**
+     * clear_suggest.
+     * @param $request Request
+     * @return Response
+     */
+    public function clear_suggest(Request $request) {
+        $data['users'] = CustomerQModel::get_all_user();
+        foreach($data['users'] as $member) {
+            CustomerCModel::update_user($member->id, [
+                'suggest_at' => null,
+                'discover_at' => null,
+                'point_at' => null,
+            ]);
+        }
         return back();
     }
 

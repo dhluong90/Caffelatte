@@ -28,6 +28,9 @@
         <div class="row">
             <div class="form-group pull-right">
                 <div class="col-md-12">
+                    @if($user->role == 1)
+                    <a class="btn btn-success export-user-to-excel" href="{{"/admincp/user/clear_suggest"}}">Clear suggest</a>
+                    @endif
                     <a class="btn btn-success export-user-to-excel" href="{{"/admincp/user/member/export"}}"
                        target="_blank">Xuất dữ liệu</a>
                 </div>

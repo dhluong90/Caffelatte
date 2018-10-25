@@ -44,6 +44,7 @@ Route::group(['middleware' => ['auth']], function () {
                 Route::get('/admin', 'Admin\UserController@list_admin');
                 Route::get('/set_admin/{user_id}','Admin\UserController@set_admin');
                 Route::get('/unset_admin/{user_id}','Admin\UserController@unset_admin');
+                Route::get('/clear_suggest', 'Admin\UserController@clear_suggest');
             });
         });
     });
