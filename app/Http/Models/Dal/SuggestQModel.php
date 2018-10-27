@@ -328,7 +328,7 @@ class SuggestQModel extends Model
         ;
         $data = $query->get();
         if ($data) {
-            $data = $data->pluck('id');
+            $data = $data->pluck('id')->toArray();
         } else {
             $data = [];
         }
