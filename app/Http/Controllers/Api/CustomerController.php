@@ -264,10 +264,13 @@ class CustomerController extends Controller
 
         if (in_array($matching_id, $top_suggest_id)) {
             $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
-            SuggestCModel::update_suggest($suggested_item->id, [
-                'status' => config('constant.suggest.status.liked'),
-                'updated_at' => date('Y-m-d', time())
-            ]);
+            if ($suggested_item) {
+                SuggestCModel::update_suggest($suggested_item->id, [
+                    'status' => config('constant.suggest.status.liked'),
+                    'updated_at' => date('Y-m-d', time())
+                ]);
+            }
+
 
             return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
         }
