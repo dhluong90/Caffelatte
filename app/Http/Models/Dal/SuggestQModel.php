@@ -212,7 +212,7 @@ class SuggestQModel extends Model
      * @param $status
      * @return user
      */
-    public static function get_record_by_status($user_id, $matching_id, $status)
+    public static function get_record_by_status($user_id, $matching_id, $status, $limit = 3)
     {
         return DB::table('suggests')
             ->select('*')
