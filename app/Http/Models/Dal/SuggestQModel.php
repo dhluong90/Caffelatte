@@ -324,7 +324,7 @@ class SuggestQModel extends Model
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('s.status', $array_reacted)
-            ->where('updated_at', $date)
+            ->where('s.updated_at', $date)
         ;
         $data = $query->get();
         if ($data) {
