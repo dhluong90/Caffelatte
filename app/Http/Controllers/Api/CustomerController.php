@@ -227,6 +227,9 @@ class CustomerController extends Controller
         // get current
         $user_current = CustomerQModel::get_user_by_id($user_id);
 
+        $user_current_suggest = json_decode($user_current->_suggested);
+        $top_suggest_id = [$user_current_suggest[0], $user_current_suggest[1], $user_current_suggest[2]];
+
         // case 1: user matching liked current user
         $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.liked'));
 
@@ -258,9 +261,9 @@ class CustomerController extends Controller
         }
 
         // case 2: user matching have suggested for current user
-        $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
 
-        if ($suggested_item) {
+        if (in_array($matching_id, $top_suggest_id)) {
+            $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
             SuggestCModel::update_suggest($suggested_item->id, [
                 'status' => config('constant.suggest.status.liked'),
                 'updated_at' => date('Y-m-d', time())
@@ -307,6 +310,10 @@ class CustomerController extends Controller
         $user_id = $request->input('user_id');
         $matching_id = $request->input('matching_id');
 
+        $user_current = CustomerQModel::get_user_by_id($user_id);
+        $user_current_suggest = json_decode($user_current->_suggested);
+        $top_suggest_id = [$user_current_suggest[0], $user_current_suggest[1], $user_current_suggest[2]];
+
         // check user matching
         $user_matching = CustomerQModel::get_user_by_id($matching_id);
         if (!$user_matching) {
@@ -317,8 +324,14 @@ class CustomerController extends Controller
             );
         }
 
+        $suggested_item = null;
+
+
+
         // case 1: user matching is suggested by current user
-        $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
+        if (in_array($matching_id, $top_suggest_id)) {
+            $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
+        }
 
         // case 2: matching_id is liked current user
         $liked_item = SuggestQModel::get_record_by_status($matching_id, $user_id, config('constant.suggest.status.liked'));
