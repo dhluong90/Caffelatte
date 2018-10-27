@@ -543,6 +543,8 @@ class CustomerController extends Controller
             $reacting = $suggesting_user->content();
             $reacting = json_decode($reacting);
             $reacting_id = array_column($reacting->data, 'id');
+            $list_react_today = SuggestQModel::get_reacted_user_in_day($user_id);
+            $reacting_id = array_merge($reacting_id, $list_react_today);
             $result = SuggestQModel::get_current_discover($user_id, $user->discover_at, $reacting_id);
 
             return ApiHelper::success($result);
