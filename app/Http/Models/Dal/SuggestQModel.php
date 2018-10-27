@@ -312,7 +312,28 @@ class SuggestQModel extends Model
             ->whereIn('s.status', $array_reacted);
 
 
-        return $query->get()->pluck('id')->toArray();
+        return $query->get()->pluck('id');
+    }
+
+    public static function get_reacted_user_in_day($user_id) {
+        $current_time = time();
+        $date = date('Y-m-d', $current_time);
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $query = DB::table('customers as u')
+            ->select('u.*', 's.status')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
+            ->where('s.user_id', '=', $user_id)
+            ->whereIn('s.status', $array_reacted)
+            ->where('updated_at', $date)
+        ;
+        $data = $query->get();
+        if ($data) {
+            $data = $data->pluck('id');
+        } else {
+            $data = [];
+        }
+
+        return $data;
     }
 
 }
