@@ -533,18 +533,15 @@ class CustomerController extends Controller
         }
 
         $suggests = [];
-
+        $this->suggest($request);
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
 
         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
 //            // get user in field suggested
-            $suggesting_user = $this->suggest($request);
-            $reacting = $suggesting_user->content();
-            $reacting = json_decode($reacting);
+            $reacting = json_decode($user->_suggested);
             $reacting_id = array_column($reacting->data, 'id');
-            $list_react_today = SuggestQModel::get_reacted_user_in_day($user_id);
-            $reacting_id = array_merge($reacting_id, $list_react_today);
+            $reacting_id = [$reacting_id[0], $reacting_id[1], $reacting_id[2]];
             $result = SuggestQModel::get_current_discover($user_id, $user->discover_at, $reacting_id);
 
             return ApiHelper::success($result);
