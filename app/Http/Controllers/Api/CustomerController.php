@@ -540,7 +540,12 @@ class CustomerController extends Controller
         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
 //            // get user in field suggested
             $reacting = json_decode($user->_suggested);
-            $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
+            if (count($reacting) < 4) {
+                $reacting_id = $reacting;
+                
+            } else {
+                $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
+            }
             $result = SuggestQModel::get_current_discover($user_id, $user->discover_at, $reacting_id);
 
             return ApiHelper::success($result);
