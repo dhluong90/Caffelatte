@@ -551,7 +551,13 @@ class CustomerController extends Controller
             $react = SuggestQModel::get_react_user($user->id);
             $react[] = $user_id;
             $reacting = json_decode($user->_suggested);
-            $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
+            if (count($reacting) < 4) {
+                $reacting_id = $reacting;
+                
+            } else {
+                $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
+            }
+            
 
             // get new discover
 //            $result = SuggestQModel::get_new_discover($user);
