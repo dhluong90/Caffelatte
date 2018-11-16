@@ -20,6 +20,7 @@
         "league/flysystem-aws-s3-v3": "^1.0",
         "maatwebsite/excel": "1.x",
         "phpoffice/phpspreadsheet": "^1.4",
+        "propaganistas/laravel-phone": "^4.0",
         "yish/imgur": "^1.0"
     },
     "require-dev": {

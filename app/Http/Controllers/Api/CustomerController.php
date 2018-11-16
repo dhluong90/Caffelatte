@@ -41,7 +41,7 @@ class CustomerController extends Controller
     }
 
     public $ruleUpdateUser = [
-        'phone' => 'sometimes|required|regex:/^\(?\+?([0-9]{1,4})\)?[-\. ]?(\d{3})[-\. ]?([0-9]{7})$/',
+        'phone' => 'sometimes|required|phone:AUTO',
         'email' => 'sometimes|required|email'
     ];
 
@@ -175,7 +175,6 @@ class CustomerController extends Controller
                 );
             }
         }
-
         $validation = Validator::make($data, $this->ruleUpdateUser);
         if ($validation->fails()) {
             return ApiHelper::error(
