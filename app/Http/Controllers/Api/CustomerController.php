@@ -41,7 +41,7 @@ class CustomerController extends Controller
     }
 
     public $ruleUpdateUser = [
-        'phone' => 'sometimes|required|phone:AUTO',
+        'phone' => 'sometimes|required|phone:VN,SG,TH,LA,MM,MY',
         'email' => 'sometimes|required|email'
     ];
 
