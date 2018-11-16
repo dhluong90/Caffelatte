@@ -16,6 +16,7 @@ use App\Http\Models\Dal\UserCModel;
 use App\Http\Models\Business\UserModel;
 use App\Http\Models\Dal\CustomerQModel;
 use App\Http\Models\Dal\CustomerCModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use App\Http\Helpers\Constants;
 
@@ -162,6 +163,9 @@ class UserController extends Controller
      * @return Response
      */
     public function clear_suggest(Request $request) {
+        $current_time = time();
+        $today = date('Y-m-d', $current_time);
+        $listDeleteStatus = [config('constant.suggest.status.suggested'), config('constant.suggest.status.discover')];
         $data['users'] = CustomerQModel::get_all_user();
         foreach($data['users'] as $member) {
             CustomerCModel::update_user($member->id, [
@@ -170,6 +174,8 @@ class UserController extends Controller
                 'point_at' => null,
             ]);
         }
+        $deleteAllRecordSuggested = DB::table('suggests')->where('created_at', $today)->whereIn('status', $listDeleteStatus)->delete();
+
         return back();
     }
 
