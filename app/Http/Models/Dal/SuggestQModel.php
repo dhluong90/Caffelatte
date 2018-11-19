@@ -2,6 +2,7 @@
 
 namespace App\Http\Models\Dal;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -149,12 +150,12 @@ class SuggestQModel extends Model
      */
     public static function get_current_suggest($limit, $list_suggest, $user_id)
     {
-        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), config('constant.suggest.status.discover')];
+        $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         $list_suggest = json_decode($list_suggest);
         if ($list_suggest) {
             $list_suggest_text = implode(',', $list_suggest);
         }
-
         // get user like me in $suggest_list
         return DB::table('customers as u')
             ->select('u.*')
@@ -162,6 +163,7 @@ class SuggestQModel extends Model
             ->where('s.user_id', '=', $user_id)
             ->whereIn('u.id', $list_suggest)
             ->whereNotIn('s.status', $array_reacted)
+            ->where('s.created_at', $today)
             ->orderByRaw("FIELD(u.id, " . $list_suggest_text . ")")
             ->limit($limit)
             ->distinct()
@@ -262,6 +264,8 @@ class SuggestQModel extends Model
      */
     public static function get_current_discover($user_id, $discover_at, $reacting_id)
     {
+        $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
+
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
         // get user like me in $suggest_list
         return DB::table('customers as u')
@@ -271,6 +275,7 @@ class SuggestQModel extends Model
             ->where('s.status', '=', config('constant.suggest.status.discover'))
             ->whereNotIn('s.status', $array_reacted)
             ->whereNotIn('u.id', $reacting_id)
+            ->where('s.created_at', $today)
             ->limit(config('constant.suggest.limit'))
             ->orderByRaw("suggest_id ASC")
             ->distinct()
