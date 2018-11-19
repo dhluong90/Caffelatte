@@ -151,7 +151,7 @@ class SuggestQModel extends Model
     public static function get_current_suggest($limit, $list_suggest, $user_id)
     {
         $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
-        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), config('constant.suggest.status.discover')];
         $list_suggest = json_decode($list_suggest);
         if ($list_suggest) {
             $list_suggest_text = implode(',', $list_suggest);
