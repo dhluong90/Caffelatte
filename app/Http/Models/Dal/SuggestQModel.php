@@ -161,7 +161,7 @@ class SuggestQModel extends Model
 
         return DB::table('customers as u')
             ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [$str_reacted_status])
-            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('u.id', $list_suggest)
             ->whereNotIn('s.status', $array_status_not_get)
