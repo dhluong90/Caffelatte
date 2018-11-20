@@ -158,18 +158,46 @@ class SuggestQModel extends Model
         if ($list_suggest) {
             $list_suggest_text = implode(',', $list_suggest);
         }
-        // get user like me in $suggest_list
-        return DB::table('customers as u')
-            ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [$str_reacted_status])
+        $list_check_reacted = [];
+        if (count($list_suggest) < 3) {
+            $list_check_reacted = $list_suggest;
+        } else {
+            $list_check_reacted = [$list_suggest[0], $list_suggest[1], $list_suggest[2]];
+        }
+        
+        $rsp = [];
+        
+        if (count($list_check_reacted) > 0) {
+            $str_check_reacted = implode(',', $list_check_reacted);
+            $rsp = DB::table('customers as u')
+            ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [config('constant.suggest.status.approved')])
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
+            ->where('s.matching_id', '=', $user_id)
+            ->whereIn('u.id', $list_suggest)
+            ->whereNotIn('s.status', $array_status_not_get)
+            ->where('s.updated_at', $today)
+            ->orderByRaw("FIELD(u.id, " . $str_check_reacted . ")")
+            ->limit($limit)
+            ->distinct()
+            ->get();
+        }
+        
+        if (count($rsp) < 3) {
+            $list_not_reacted = DB::table('customers as u')
+            ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [$str_reacted_status])
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('u.id', $list_suggest)
             ->whereNotIn('s.status', $array_status_not_get)
             ->where('s.created_at', $today)
             ->orderByRaw("FIELD(u.id, " . $list_suggest_text . ")")
-            ->limit($limit)
+            ->limit($limit - count($rsp))
             ->distinct()
             ->get();
+            $rsp = array_merge($rsp, $list_not_reacted);
+        }
+        // get user like me in $suggest_list
+        return $rsp;
     }
 
     /**
