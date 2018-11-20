@@ -166,7 +166,7 @@ class SuggestQModel extends Model
             ->whereIn('u.id', $list_suggest)
             ->whereNotIn('s.status', $array_status_not_get)
             ->where('s.created_at', $today)
-            ->orderByRaw("FIELD(u.matching_id, " . $list_suggest_text . ")")
+            ->orderByRaw("FIELD(u.id, " . $list_suggest_text . ")")
             ->limit($limit)
             ->distinct()
             ->get();
