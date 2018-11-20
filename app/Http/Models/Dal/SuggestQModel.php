@@ -271,7 +271,7 @@ class SuggestQModel extends Model
         $str_reacted_status = implode(',', $array_reacted);
         // get user like me in $suggest_list
         return DB::table('customers as u')
-            ->select('u.*', 's.id as suggest_id','s.status')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [$str_reacted_status])
+            ->select('u.*', 's.id as suggest_id','s.status')->selectRaw('(CASE WHEN s.status IN (2,3,4,7) THEN TRUE ELSE FALSE END) as reacted')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->where('s.status', '=', config('constant.suggest.status.discover'))
