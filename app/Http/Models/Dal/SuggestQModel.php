@@ -170,11 +170,6 @@ class SuggestQModel extends Model
             ->limit($limit - count($rsp))
             ->distinct()
             ->get();
-
-        
-        
-        // get user like me in $suggest_list
-        return $rsp;
     }
 
     /**
