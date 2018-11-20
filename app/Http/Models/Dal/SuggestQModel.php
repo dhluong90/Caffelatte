@@ -151,41 +151,15 @@ class SuggestQModel extends Model
     public static function get_current_suggest($limit, $list_suggest, $user_id)
     {
         $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
-        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), 7];
         $str_reacted_status = implode(',', $array_reacted);
         $array_status_not_get = [ config('constant.suggest.status.discover')];
         $list_suggest = json_decode($list_suggest);
         if ($list_suggest) {
             $list_suggest_text = implode(',', $list_suggest);
         }
-        $list_check_reacted = [];
-        if (count($list_suggest) < 3) {
-            $list_check_reacted = $list_suggest;
-        } else {
-            $list_check_reacted = [$list_suggest[0], $list_suggest[1], $list_suggest[2]];
-        }
-        
-        $rsp = [];
-        
-        if (count($list_check_reacted) > 0) {
-            $str_check_reacted = implode(',', $list_check_reacted);
-            $rsp = DB::table('customers as u')
-            ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [config('constant.suggest.status.approved')])
-            ->join('suggests as s', 's.matching_id', '=', 'u.id')
-            ->where('s.matching_id', '=', $user_id)
-            ->whereIn('u.id', $list_check_reacted)
-            ->whereNotIn('s.status', $array_status_not_get)
-            ->where('s.updated_at', $today)
-            ->orderByRaw("FIELD(u.id, " . $str_check_reacted . ")")
-            ->limit($limit)
-            ->distinct()
-            ->get();
-        }
-        
-        dd($rsp);
-        
-        if (count($rsp) < 3) {
-            $list_not_reacted = DB::table('customers as u')
+
+        return DB::table('customers as u')
             ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [$str_reacted_status])
             ->join('suggests as s', 's.user_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
@@ -196,7 +170,7 @@ class SuggestQModel extends Model
             ->limit($limit - count($rsp))
             ->distinct()
             ->get();
-        }
+
         
         
         // get user like me in $suggest_list
