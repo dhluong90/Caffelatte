@@ -245,7 +245,10 @@ class CustomerController extends Controller
             // delete suggest if exist record
             $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
             if ($suggested_item) {
-                SuggestCModel::delete_suggest($suggested_item->id);
+                SuggestCModel::update_suggest($suggested_item->id,[
+                    'status' => 7,
+                    'updated_at' => date('Y-m-d', time())
+                ]);
             }
 
             // todo realtime
