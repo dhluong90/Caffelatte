@@ -151,20 +151,22 @@ class SuggestQModel extends Model
     public static function get_current_suggest($limit, $list_suggest, $user_id)
     {
         $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
-        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), config('constant.suggest.status.discover')];
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $str_reacted_status = implode(',', $array_reacted);
+        $array_status_not_get = [ config('constant.suggest.status.discover')];
         $list_suggest = json_decode($list_suggest);
         if ($list_suggest) {
             $list_suggest_text = implode(',', $list_suggest);
         }
         // get user like me in $suggest_list
         return DB::table('customers as u')
-            ->select('u.*')
+            ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', $str_reacted_status)
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('u.id', $list_suggest)
-            ->whereNotIn('s.status', $array_reacted)
+            ->whereNotIn('s.status', $array_status_not_get)
             ->where('s.created_at', $today)
-            ->orderByRaw("FIELD(u.id, " . $list_suggest_text . ")")
+            ->orderByRaw("FIELD(u.matching_id, " . $list_suggest_text . ")")
             ->limit($limit)
             ->distinct()
             ->get();
@@ -265,15 +267,14 @@ class SuggestQModel extends Model
     public static function get_current_discover($user_id, $discover_at, $reacting_id)
     {
         $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
-
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $str_reacted_status = implode(',', $array_reacted);
         // get user like me in $suggest_list
         return DB::table('customers as u')
-            ->select('u.*', 's.id as suggest_id','s.status')
+            ->select('u.*', 's.id as suggest_id','s.status')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', $str_reacted_status)
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->where('s.status', '=', config('constant.suggest.status.discover'))
-            ->whereNotIn('s.status', $array_reacted)
             ->whereNotIn('u.id', $reacting_id)
             ->where('s.created_at', $today)
             ->limit(config('constant.suggest.limit'))
