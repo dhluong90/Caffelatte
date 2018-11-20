@@ -173,7 +173,7 @@ class SuggestQModel extends Model
             ->select('u.*')->selectRaw('(CASE WHEN s.status IN (?) THEN TRUE ELSE FALSE END) as reacted', [config('constant.suggest.status.approved')])
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.matching_id', '=', $user_id)
-            ->whereIn('u.id', $list_suggest)
+            ->whereIn('u.id', $list_check_reacted)
             ->whereNotIn('s.status', $array_status_not_get)
             ->where('s.updated_at', $today)
             ->orderByRaw("FIELD(u.id, " . $str_check_reacted . ")")
@@ -181,6 +181,8 @@ class SuggestQModel extends Model
             ->distinct()
             ->get();
         }
+        
+        dd($rsp);
         
         if (count($rsp) < 3) {
             $list_not_reacted = DB::table('customers as u')
@@ -194,8 +196,9 @@ class SuggestQModel extends Model
             ->limit($limit - count($rsp))
             ->distinct()
             ->get();
-            $rsp = array_merge($rsp, $list_not_reacted);
         }
+        
+        
         // get user like me in $suggest_list
         return $rsp;
     }
