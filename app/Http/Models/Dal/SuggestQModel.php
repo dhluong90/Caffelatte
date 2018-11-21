@@ -310,7 +310,7 @@ class SuggestQModel extends Model
 
     public static function get_react_user($user_id)
     {
-        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), 7];
         $query = DB::table('customers as u')
             ->select('u.*', 's.status')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
