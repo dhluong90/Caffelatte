@@ -556,9 +556,12 @@ class CustomerController extends Controller
             } else {
                 $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
             }
-            $result = SuggestQModel::get_current_discover($user_id, $user->discover_at, $reacting_id);
+            $listDiscover = json_decode($user->__discover);
+            if (!empty($listDiscover)) {
+                $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $listDiscover);
+            }
 
-            return ApiHelper::success($result);
+
         } else {
             // remove old discover yesterday
             SuggestCModel::reset_discover($user_id);
@@ -604,15 +607,15 @@ class CustomerController extends Controller
                     SuggestCModel::create_suggest($data);
                 }
 
-                // update discover_at table customer
-                CustomerCModel::update_user($user_id, [
-                    'discover_at' => date('Y-m-d', $current_time)
-                ]);
+                $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $suggestId);
 
-                $result = SuggestQModel::get_current_discover($user_id, date('Y-m-d', $current_time), $reacting_id);
-
-                return ApiHelper::success($result);
             }
+
+            // update discover_at table customer
+            CustomerCModel::update_user($user_id, [
+                'discover_at' => date('Y-m-d', $current_time),
+                '__discover' => json_encode($suggestId)
+            ]);
         }
 
         return ApiHelper::success($suggests);

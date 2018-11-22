@@ -261,24 +261,27 @@ class SuggestQModel extends Model
     /**
      * get_current_discover
      * @param $user_id
-     * @param $discover_at
+     * @param $reactingId
+     * @param $listId
      * @return user
      */
-    public static function get_current_discover($user_id, $discover_at, $reacting_id)
+    public static function get_current_discover($user_id, $reactingId ,$listId)
     {
+        $strMatchingId = implode(',', $listId);
         $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
-        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked')];
+        $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), 7];
         $str_reacted_status = implode(',', $array_reacted);
         // get user like me in $suggest_list
         return DB::table('customers as u')
-            ->select('u.*', 's.id as suggest_id','s.status')->selectRaw('(CASE WHEN s.status IN (2,3,4,7) THEN TRUE ELSE FALSE END) as reacted')
+            ->select('u.*', 's.id as suggest_id','s.status')->selectRaw('(CASE WHEN s.status IN ('.$str_reacted_status.') THEN TRUE ELSE FALSE END) as reacted')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
-            ->where('s.status', '=', config('constant.suggest.status.discover'))
-            ->whereNotIn('u.id', $reacting_id)
+            ->whereIn('u.id', $listId)
+            ->whereNotIn('u.id', $reactingId)
+            ->whereNotIn('s.status', [config('constant.suggest.status.suggested')])
             ->where('s.created_at', $today)
             ->limit(config('constant.suggest.limit'))
-            ->orderByRaw("suggest_id ASC")
+            ->orderByRaw("FIELD(u.id, " . $strMatchingId . ")")
             ->distinct()
             ->get();
     }
