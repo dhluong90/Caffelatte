@@ -885,7 +885,7 @@ class CustomerController extends Controller
     protected function addUserIdToUserList($idList, $idUser, $suggestId)
     {
         foreach ($idList as $k => $id) {
-            if ($id != $idUser) {
+            if ($id != $idUser && !in_array($id, $suggestId)) {
                 $suggestId[] = $id;
             }
 //            if (count($suggestId) == 3) break;
