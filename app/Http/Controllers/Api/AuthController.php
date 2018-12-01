@@ -123,12 +123,16 @@ class AuthController extends Controller
             // signup
             try {
                 $quickBlox = new QuickBloxHelper();
-                $chatId = $quickBlox->createNewUser($profile['email'], $profile['id'], $profile['name']);
+                $userEmail = $profile['id'].'@facebook.com';
+                if (isset($profile['email'])) {
+                    $userEmail = $profile['email'];
+                }
+                $chatId = $quickBlox->createNewUser($userEmail, $profile['id'], $profile['name']);
                 $data = [
                     'name' => $profile['name'],
                     'image' => json_encode(['https://graph.facebook.com/' . $profile['id'] . '/picture?type=large&width=720&height=720']),
                     'facebook_id' => $profile['id'],
-                    'email' => $profile['email'],
+                    'email' => $userEmail,
                     'chat_id' => $chatId,
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),

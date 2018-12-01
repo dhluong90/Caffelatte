@@ -245,7 +245,10 @@ class CustomerController extends Controller
             // delete suggest if exist record
             $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
             if ($suggested_item) {
-                SuggestCModel::delete_suggest($suggested_item->id);
+                SuggestCModel::update_suggest($suggested_item->id,[
+                    'status' => 7,
+                    'updated_at' => date('Y-m-d', time())
+                ]);
             }
 
             // todo realtime
@@ -553,9 +556,12 @@ class CustomerController extends Controller
             } else {
                 $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
             }
-            $result = SuggestQModel::get_current_discover($user_id, $user->discover_at, $reacting_id);
+            $listDiscover = json_decode($user->__discover);
+            if (!empty($listDiscover)) {
+                $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $listDiscover);
+            }
 
-            return ApiHelper::success($result);
+
         } else {
             // remove old discover yesterday
             SuggestCModel::reset_discover($user_id);
@@ -601,15 +607,15 @@ class CustomerController extends Controller
                     SuggestCModel::create_suggest($data);
                 }
 
-                // update discover_at table customer
-                CustomerCModel::update_user($user_id, [
-                    'discover_at' => date('Y-m-d', $current_time)
-                ]);
+                $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $suggestId);
 
-                $result = SuggestQModel::get_current_discover($user_id, date('Y-m-d', $current_time), $reacting_id);
-
-                return ApiHelper::success($result);
             }
+
+            // update discover_at table customer
+            CustomerCModel::update_user($user_id, [
+                'discover_at' => date('Y-m-d', $current_time),
+                '__discover' => json_encode($suggestId)
+            ]);
         }
 
         return ApiHelper::success($suggests);
@@ -879,7 +885,7 @@ class CustomerController extends Controller
     protected function addUserIdToUserList($idList, $idUser, $suggestId)
     {
         foreach ($idList as $k => $id) {
-            if ($id != $idUser) {
+            if ($id != $idUser && !in_array($id, $suggestId)) {
                 $suggestId[] = $id;
             }
 //            if (count($suggestId) == 3) break;
