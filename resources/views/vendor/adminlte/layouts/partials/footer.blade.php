@@ -4,7 +4,7 @@
     <div class="pull-right hidden-xs">
     </div>
     <!-- Default to the left -->
-    <strong>Copyright &copy; 2017 <a href="http://ancomnha.com">ancomnha.com</a></strong>
+    <strong>Copyright &copy; 2018 <a href="#">Cafe & Latte</a></strong>
 </footer>
     
     
