@@ -34,12 +34,21 @@ class ToolController extends Controller
     }
 
     protected $row_header = [
-        'Tên',
-        'Email',
-        'Giới tính',
-        'Số điện thoại',
-        'Quốc gia',
-        'Ngày đăng ký'
+        'name',
+        'email',
+        'gender',
+        'phone',
+        'country',
+        'created_at',
+        'city',
+        'height',
+        'education',
+        'occupation',
+        'about_me',
+        'looking_for',
+        'religion',
+        'birthday',
+        'login_at',
     ];
 
     protected $row_used = [
@@ -48,7 +57,16 @@ class ToolController extends Controller
         'C',
         'D',
         'E',
-        'F'
+        'F',
+        'G',
+        'H',
+        'I',
+        'J',
+        'K',
+        'L',
+        'M',
+        'N',
+        'O',
     ];
 
     protected $list_field_export = [
@@ -57,7 +75,16 @@ class ToolController extends Controller
         'gender',
         'phone',
         'country',
-        'created_at'
+        'created_at',
+        'city',
+        'height',
+        'education',
+        'occupation',
+        'sumary',
+        'information',
+        'religion',
+        'birthday',
+        'login_at',
     ];
 
     public function index() {
