@@ -82,6 +82,8 @@ class CustomerController extends Controller
             );
         }
 
+        $user = ApiHelper::clear_data_member($user);
+
         return ApiHelper::success($user);
     }
 
@@ -421,6 +423,8 @@ class CustomerController extends Controller
             return ApiHelper::success([]);
         }
 
+        $list = ApiHelper::clear_data_member($list);
+
         return ApiHelper::success($list);
     }
 
@@ -531,6 +535,8 @@ class CustomerController extends Controller
             $result = SuggestQModel::get_current_suggest(config('constant.suggest.limit'), $user->_suggested, $user_id);
         }
 
+        $result = ApiHelper::clear_data_member($result);
+
         return ApiHelper::success($result);
     }
 
@@ -618,6 +624,8 @@ class CustomerController extends Controller
             ]);
         }
 
+        $suggests = ApiHelper::clear_data_member($suggests);
+
         return ApiHelper::success($suggests);
     }
 
@@ -629,6 +637,8 @@ class CustomerController extends Controller
 
         $manual_friends = array_intersect(json_decode($user->_friend), json_decode($my_friend->_friend));
         $result = CustomerQModel::get_users_by_facebooks($manual_friends);
+
+        $result = ApiHelper::clear_data_member($result);
 
         return ApiHelper::success($result);
     }

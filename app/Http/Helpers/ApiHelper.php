@@ -74,4 +74,12 @@ Class ApiHelper {
             ],
         ]), $status_code)->header('Content-Type', 'application/json');
     }
+
+    public static function clear_data_member($data = []) {
+        foreach ($data as $key => $value) {
+            unset($value->password, $value->token, $value->fcm_token, $value->facebook_token);
+        }
+
+        return $data;
+    }
 }
