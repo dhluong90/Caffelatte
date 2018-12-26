@@ -13,7 +13,7 @@
 
 // Web application
 Route::get('/', function () {
-    echo 'hello';
+    return redirect('/admincp');
 });
 
 // Ajax
