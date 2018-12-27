@@ -8,6 +8,7 @@ use App\Http\Models\Dal\CustomerQModel;
 use App\Http\Helpers\ApiHelper;
 use \Firebase\JWT\JWT;
 use \Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ApiToken
 {
@@ -56,5 +57,15 @@ class ApiToken
         $request->request->add(['user_id' => $user->id]);
 
         return $next($request);
+    }
+
+    public function terminate($request, $response)
+    {
+        Log::info('app.requests', [
+            'url' => $request->url(),
+            'token' => $request->header('Authorization'),
+            'request' => $request->all(),
+            'response' => $response
+        ]);
     }
 }
