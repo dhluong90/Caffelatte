@@ -72,6 +72,34 @@ class SuggestQModel extends Model
     }
 
     /**
+     * get_list_match_by_user_id
+     * @param $user_id
+     * @return user
+     */
+    public static function get_list_match_by_user_id($user_id)
+    {
+        // case 1, user is user_id
+        $list1 = DB::table('customers as u')
+            ->select('u.*')
+            ->join('suggests as s', 's.matching_id', '=', 'u.id')
+            ->where('s.user_id', '=', $user_id)
+            ->where('s.status', config('constant.suggest.status.approved'))
+            ->get()
+            ->toArray();
+
+        // case 2, user is matching_id
+        $list2 = DB::table('customers as u')
+            ->select('u.*')
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->where('s.matching_id', '=', $user_id)
+            ->where('s.status', config('constant.suggest.status.approved'))
+            ->get()
+            ->toArray();
+        $result = array_merge($list1, $list2);
+        return $result;
+    }
+
+    /**
      * get_list
      * @param $user_id
      * @param $status array

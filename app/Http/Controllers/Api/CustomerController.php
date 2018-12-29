@@ -428,6 +428,21 @@ class CustomerController extends Controller
         return ApiHelper::success($list);
     }
 
+    public function list_match(Request $request)
+    {
+        $user_id = $request->input('user_id');
+
+        $list = SuggestQModel::get_list_match_by_user_id($user_id);
+
+        if (!$list) {
+            return ApiHelper::success([]);
+        }
+
+        $list = ApiHelper::clear_data_member($list);
+
+        return ApiHelper::success($list);
+    }
+
     public function suggest(Request $request)
     {
         $current_time = time();
