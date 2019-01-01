@@ -567,7 +567,6 @@ class CustomerController extends Controller
         $this->suggest($request);
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
-
         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
 //            // get user in field suggested
             $reacting = json_decode($user->_suggested);

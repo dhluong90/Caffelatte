@@ -298,13 +298,15 @@ class SuggestQModel extends Model
         $strMatchingId = implode(',', $listId);
         $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), 7];
-        $str_reacted_status = implode(',', $array_reacted);
+        $listReactedPrev = SuggestQModel::get_react_user($user_id);
+        $listNotGet[] = $user_id;
         // get user like me in $suggest_list
-        return DB::table('customers as u')
-            ->select('u.*', 's.status')->selectRaw('(CASE WHEN s.status IN ('.$str_reacted_status.') THEN TRUE ELSE FALSE END) as reacted')
+        $list = DB::table('customers as u')
+            ->select('u.*', 's.status', 's.created_at as s_created_at')->selectRaw('CASE WHEN 0 = 0 THEN FALSE END as reacted')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('u.id', $listId)
+            ->whereNotIn('u.id', $listReactedPrev)
             ->whereNotIn('u.id', $reactingId)
             ->whereNotIn('s.status', [config('constant.suggest.status.suggested')])
             ->where('s.created_at', $today)
@@ -312,6 +314,14 @@ class SuggestQModel extends Model
             ->orderByRaw("FIELD(u.id, " . $strMatchingId . ")")
             ->distinct()
             ->get();
+        foreach ($list as $k => $item) {
+            if (in_array($item->id, $array_reacted) ) {
+                $list[$k]->reacted = 1;
+            } else {
+                $list[$k]->reacted = 0;
+            }
+        }
+        return $list;
     }
 
     /**
@@ -346,9 +356,8 @@ class SuggestQModel extends Model
             ->select('u.*', 's.status')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
+            ->where('s.created_at', '=', Carbon::now()->format('Y-m-d'))
             ->whereIn('s.status', $array_reacted);
-
-
         return $query->get()->pluck('id');
     }
 
