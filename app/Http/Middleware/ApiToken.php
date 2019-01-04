@@ -62,6 +62,7 @@ class ApiToken
     public function terminate($request, $response)
     {
         Log::info('app.requests', [
+            'device' => $request->header('User-Agent'),
             'url' => $request->url(),
             'token' => $request->header('Authorization'),
             'request' => $request->all(),
