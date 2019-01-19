@@ -356,7 +356,6 @@ class SuggestQModel extends Model
             ->select('u.*', 's.status')
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
-            ->where('s.created_at', '=', Carbon::now()->format('Y-m-d'))
             ->whereIn('s.status', $array_reacted);
         return $query->get()->pluck('id');
     }
@@ -371,6 +370,7 @@ class SuggestQModel extends Model
             ->where('s.user_id', '=', $user_id)
             ->whereIn('s.status', $array_reacted)
             ->where('s.updated_at', $date)
+            ->where('s.created_at', '=', Carbon::now()->format('Y-m-d'))
         ;
         $data = $query->get();
         if ($data) {
