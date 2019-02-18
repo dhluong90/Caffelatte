@@ -229,10 +229,10 @@ class CustomerController extends Controller
         $user_current = CustomerQModel::get_user_by_id($user_id);
 
         $user_current_suggest = json_decode($user_current->_suggested);
-        if (count($user_current_suggest) < 3) {
+        if (count($user_current_suggest) < 5) {
             $top_suggest_id = $user_current_suggest;
         } else {
-            $top_suggest_id = [$user_current_suggest[0], $user_current_suggest[1], $user_current_suggest[2]];
+            $top_suggest_id = [$user_current_suggest[0], $user_current_suggest[1], $user_current_suggest[2], $user_current_suggest[3], $user_current_suggest[4]];
         }
 
         // case 1: user matching liked current user
@@ -323,10 +323,10 @@ class CustomerController extends Controller
 
         $user_current = CustomerQModel::get_user_by_id($user_id);
         $user_current_suggest = json_decode($user_current->_suggested);
-        if (count($user_current_suggest) < 3) {
+        if (count($user_current_suggest) < 5) {
             $top_suggest_id = $user_current_suggest;
         } else {
-            $top_suggest_id = [$user_current_suggest[0], $user_current_suggest[1], $user_current_suggest[2]];
+            $top_suggest_id = [$user_current_suggest[0], $user_current_suggest[1], $user_current_suggest[2], $user_current_suggest[3] , $user_current_suggest[4]];
         }
 
         // check user matching

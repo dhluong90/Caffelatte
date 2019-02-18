@@ -18,7 +18,7 @@ return [
             'unmatch' => 5,
             'discover' => 6,
         ],
-        'limit' => 3
+        'limit' => 5
     ],
 
     'jwt' => [
