@@ -797,10 +797,14 @@ class CustomerController extends Controller
      */
     protected function getProfileByCity($suggestId, $profile, $react)
     {
+        $currentDate = Carbon::now();
+        $limitedBirthDay = $currentDate->subYears(17)->format('Y-m-d');
         if (count($suggestId) < 30 && $profile->city) {
             $listIdProfileInCity = CustomerQModel::select('id')
                 ->where('city', $profile->city)
                 ->where('id', '<>', $profile->id)
+                ->whereRaw('STR_TO_DATE(birthday, "%d-%m-%Y") <= '. $limitedBirthDay)
+                ->whereNotNull('customers.birthday')
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
                 ->orderByRaw("RAND()")
@@ -828,12 +832,16 @@ class CustomerController extends Controller
      */
     protected function getProfileByCountry($suggestId, $profile, $react)
     {
+        $currentDate = Carbon::now();
+        $limitedBirthDay = $currentDate->subYears(17)->format('Y-m-d');
         if (count($suggestId) < 30 && $profile->country) {
             $listIdProfileInCountry = CustomerQModel::select('id')
                 ->where('country', $profile->country)
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereRaw('STR_TO_DATE(birthday, "%d-%m-%Y") <= '. $limitedBirthDay)
+                ->whereNotNull('customers.birthday')
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
@@ -857,9 +865,14 @@ class CustomerController extends Controller
      */
     protected function getProfileByBirthday($suggestId, $profile, $react)
     {
+        $currentDate = Carbon::now();
+        $limitedBirthDay = $currentDate->subYears(17)->format('Y-m-d');
+
         if (count($suggestId) < 30 && $profile->birthday) {
             $listInAgeRange = CustomerQModel::select('id')
                 ->whereRaw('YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) + 5 ')
+                ->whereRaw('STR_TO_DATE(birthday, "%d-%m-%Y") <= '. $limitedBirthDay)
+                ->whereNotNull('customers.birthday')
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
                 ->where('id', '<>', $profile->id)
@@ -883,12 +896,16 @@ class CustomerController extends Controller
      */
     protected function getRandomProfile($suggestId, $profile, $react)
     {
+        $currentDate = Carbon::now();
+        $limitedBirthDay = $currentDate->subYears(17)->format('Y-m-d');
         if (count($suggestId) < 30) {
             $listRandomId = CustomerQModel::select('customers.id')
                 ->whereNotIn('customers.id', $react)
                 ->whereNotIn('customers.id', $suggestId)
+                ->whereNotNull('customers.birthday')
                 ->where('customers.id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
+                ->whereRaw('STR_TO_DATE(customers.birthday, "%d-%m-%Y") <= '. $limitedBirthDay)
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listRandomId) {
