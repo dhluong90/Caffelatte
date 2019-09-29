@@ -17,6 +17,8 @@ use Iivannov\Branchio\Link;
 
 use \Firebase\JWT\JWT;
 use Facebook\Facebook;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
 
 class AuthController extends Controller
 {
@@ -28,6 +30,91 @@ class AuthController extends Controller
     public function __construct()
     {
 
+    }
+
+    public function login_by_phone(Request $request)
+    {
+        $firebase_token = $request->input('firebase_token');
+
+        if (!$firebase_token) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
+
+        $serviceAccount = ServiceAccount::fromJsonFile(__DIR__ . '/cafe-latte-198808-firebase-adminsdk-l67b1-d8841a097d.json');
+        $firebase = (new Factory)->withServiceAccount($serviceAccount)->create();
+        $auth = $firebase->getAuth();
+        try {
+            $verifiedIdToken = $auth->verifyIdToken($firebase_token);
+        } catch (\InvalidToken $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+        $uid = $verifiedIdToken->getClaim('sub');
+        $phone = $firebase->getAuth()->getUser($uid)->phoneNumber;
+
+        // get current user
+        $user = CustomerQModel::get_user_by_phone($phone);
+        if ($user) {
+            // login
+            $jwt = [
+                'id' => $user->id,
+                'exp' => time() + config('constant.jwt.token_expire')
+            ];
+            $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
+
+            $data_update = [
+                'phone' => $phone,
+                'firebase_uid' => $uid,
+                'token' => $token,
+                'login_at' => date('Y-m-d H:i:s')
+            ];
+            // moved branch io to set up at the end of process
+            CustomerCModel::update_user($user->id, $data_update);
+            $user = CustomerQModel::get_user_by_phone($phone);
+            return ApiHelper::success($user);
+        } else {
+            // signup
+            try {
+                // moved quickblox to set up to the end of process
+                $data = [
+                    'phone' => $phone,
+                    'firebase_uid' => $uid,
+                    'login_at' => date('Y-m-d H:i:s'),
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'point' => 50
+                ];
+
+                $user_id = CustomerCModel::create_user($data);
+
+                // setup jwt to update token
+                $jwt = [
+                    'id' => $user_id,
+                    'exp' => time() + config('constant.jwt.token_expire')
+                ];
+                $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
+                $data_update = ['token' => $token];
+                // moved branch io to set up at the end of process
+                CustomerCModel::update_user($user_id, $data_update);
+            } catch (\Exception $e) {
+                return ApiHelper::error(
+                    config('constant.error_type.server_error'),
+                    config('constant.error_code.common.server_error'),
+                    'error: ' . $e->getMessage(),
+                    500
+                );
+            }
+            $user = CustomerQModel::get_user_by_phone($phone);
+            return ApiHelper::success($user);
+        }
     }
 
     public function login(Request $request)
@@ -138,7 +225,7 @@ class AuthController extends Controller
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
                     'created_at' => date('Y-m-d H:i:s'),
-                    'point' => 10
+                    'point' => 50
                 ];
 
 

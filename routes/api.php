@@ -26,11 +26,13 @@ Route::group(['prefix' => 'v1','middleware' => 'auth:api'], function () {
 
 Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', 'Api\AuthController@login');
+    Route::post('/loginbyphone', 'Api\AuthController@login_by_phone');
 });
 
 Route::group(['prefix' => 'user'], function () {
     Route::group(['middleware' => 'api.token'], function () {
         Route::put('/update', 'Api\CustomerController@update');
+        Route::put('/updateV2', 'Api\CustomerController@updateV2');
         Route::get('/suggest', 'Api\CustomerController@suggest');
         Route::get('/discover', 'Api\CustomerController@discover');
         Route::get('/profile/{id}', 'Api\CustomerController@profile');

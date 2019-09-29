@@ -25,6 +25,19 @@ class CustomerQModel extends Model
     }
 
     /**
+     * get_user_by_phone
+     * @param $phone
+     * @return user
+     */
+    public static function get_user_by_phone($phone)
+    {
+        return DB::table('customers')
+            ->select('*')
+            ->where('phone', '=', $phone)
+            ->first();
+    }
+
+    /**
      * get_users_by_facebooks
      * @param $facebooks array
      * @return user
@@ -69,8 +82,7 @@ class CustomerQModel extends Model
      */
     public static function get_user_by_id($user_id)
     {
-        return DB::table('customers')->select('*')->selectRaw('ROUND((DATEDIFF(NOW(), STR_TO_DATE( birthday , "%d-%m-%Y" ))/365.25
-)) as age')
+        return DB::table('customers')->select('*')->selectRaw("ROUND(DATE_PART('day', NOW() - TO_DATE( birthday , 'DD-MM-YYYY' ))/365.25) as age")
             ->where('id', '=', $user_id)
             ->first();
     }
@@ -84,8 +96,7 @@ class CustomerQModel extends Model
     public static function search_user_paging($email)
     {
         return DB::table('customers' . ' as c')
-            ->select('c.*')->selectRaw('ROUND((DATEDIFF(NOW(), STR_TO_DATE( birthday , "%d-%m-%Y" ))/365.25
-)) as age')
+            ->select('c.*')->selectRaw("ROUND(DATE_PART('day', NOW() - TO_DATE( birthday , 'DD-MM-YYYY' ))/365.25) as age")
             ->orderBy('c.id', 'desc')
             ->where('c.name', 'like', '%' . $email . '%')
             ->paginate(10);

@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use \Firebase\JWT\JWT;
 use Yish\Imgur\Facades\Upload as Imgur;
+use Iivannov\Branchio\Support\UrlType;
+use Iivannov\Branchio\Integration\Laravel\Facade\Branchio;
+use Iivannov\Branchio\Link;
 
 
 /**
@@ -208,6 +211,149 @@ class CustomerController extends Controller
         }
 
         return ApiHelper::success(['message' => 'success']);
+    }
+
+    public function updateV2(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        $data = [];
+        if ($request->input('gender') || $request->input('gender') === 0) {
+            $data['gender'] = $request->input('gender');
+        }
+
+        if ($request->input('chat_id')) {
+            $data['chat_id'] = $request->input('chat_id');
+        }
+
+        if ($request->input('country')) {
+            $data['country'] = $request->input('country');
+        }
+
+        if ($request->input('city')) {
+            $data['city'] = $request->input('city');
+        }
+
+        if ($request->input('language')) {
+            $data['language'] = $request->input('language');
+        }
+
+        if ($request->input('education')) {
+            $data['education'] = $request->input('education');
+        }
+
+        if ($request->input('occupation')) {
+            $data['occupation'] = $request->input('occupation');
+        }
+
+        if ($request->input('sumary')) {
+            $data['sumary'] = $request->input('sumary');
+        }
+
+        if ($request->input('information')) {
+            $data['information'] = $request->input('information');
+        }
+
+        if ($request->input('religion')) {
+            $data['religion'] = $request->input('religion');
+        }
+
+        if ($request->input('fcm_token')) {
+            $data['fcm_token'] = $request->input('fcm_token');
+        }
+
+        if ($request->input('birthday')) {
+            $data['birthday'] = $request->input('birthday');
+        }
+
+        if ($request->input('school')) {
+            $data['school'] = $request->input('school');
+        }
+
+        if ($request->input('degree')) {
+            $data['degree'] = $request->input('degree');
+        }
+
+        if ($request->input('employer')) {
+            $data['employer'] = $request->input('employer');
+        }
+
+        if ($request->input('ethnicity')) {
+            $data['ethnicity'] = $request->input('ethnicity');
+        }
+
+        if ($request->input('name')) {
+            $data['name'] = $request->input('name');
+        }
+
+        if ($request->input('phone')) {
+            $data['phone'] = $request->input('phone');
+        }
+        if ($request->input('email')) {
+            $data['email'] = $request->input('email');
+        }
+
+        if ($request->input('height')) {
+            $data['height'] = intval($request->input('height'));
+            if ($data['height'] < 0) {
+                return ApiHelper::error(
+                    config('constant.error_type.bad_request'),
+                    config('constant.error_code.auth.param_wrong'),
+                    'param height wrong',
+                    400
+                );
+            }
+        }
+        $validation = Validator::make($data, $this->ruleUpdateUser);
+        if ($validation->fails()) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                $validation->errors()->first(),
+                400
+            );
+        }
+
+        if (empty($data)) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
+        
+        try {
+            CustomerCModel::update_user($user_id, $data);
+        } catch (\Exception $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+
+        $user = CustomerQModel::get_user_by_id($user_id);
+        try {
+            if ($user && !$user->share_link && $user->name) {
+                $share_link = $this->generate_branch_io_link($user->id, $user->name);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+                CustomerCModel::update_user($user_id, $data_update);
+                $user = CustomerQModel::get_user_by_id($user_id);
+            }
+        } catch (\Exception $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+
+        return ApiHelper::success($user);
     }
 
     public function like(Request $request)
@@ -477,7 +623,7 @@ class CustomerController extends Controller
             if (!$txtFriends) {
                 $txtFriends = '0';
             }
-            $listFriend = CustomerCModel::whereRaw('facebook_id IN (' . $txtFriends . ')')->get();
+            $listFriend = CustomerCModel::whereRaw("facebook_id IN ('" . $txtFriends . "')")->get();
             $friend_ids = $listFriend->pluck('id')->toArray();
 
             $friend_of_friends = $listFriend->pluck('_friend');
@@ -491,16 +637,13 @@ class CustomerController extends Controller
             if (!$friend_of_friend_merge_text) {
                 $friend_of_friend_merge_text = '0';
             }
-            $selectWeightPoint = '(
-                        
-                        (CASE WHEN city = "' . $user->city . '" THEN 3 ELSE 0 END)';
+            $selectWeightPoint = "((CASE WHEN city = '" . $user->city . "' THEN 3 ELSE 0 END)";
             if ($user->birthday) {
-                $selectWeightPoint .= '  + 
-                        (CASE WHEN YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
+                $selectWeightPoint .= "  + (CASE WHEN EXTRACT(YEAR FROM TO_DATE(birthday, 'DD-MM-YYYY')) BETWEEN EXTRACT(YEAR FROM TO_DATE('" . $user->birthday . "', 'DD-MM-YYYY')) - 5 AND EXTRACT(YEAR FROM TO_DATE('" . $user->birthday . "', 'DD-MM-YYYY')) + 5 THEN 2 ELSE 0 END) ";
             }
-            $selectWeightPoint .= '+ (CASE WHEN country = "' . $user->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
+            $selectWeightPoint .= "+ (CASE WHEN country = '" . $user->country . "' THEN 1 ELSE 0 END)) as weightPoint";
 
-            $listFriendOfFriends = CustomerCModel::select('*')->selectRaw($selectWeightPoint)->whereRaw('facebook_id IN (' . $friend_of_friend_merge_text . ')')
+            $listFriendOfFriends = CustomerCModel::select('*')->selectRaw($selectWeightPoint)->whereRaw("facebook_id IN ('" . $friend_of_friend_merge_text . "')")
                 ->whereNotIn('id', $friend_ids)
                 ->whereNotIn('id', $suggests)
                 ->whereNotIn('id', $react)
@@ -694,8 +837,10 @@ class CustomerController extends Controller
             return ApiHelper::success(['message' => 'success add point new date']);
         } else {
             if ($user->old_point < 3) {
+                //Increase 2 points
+                //Old point as a counter just increase 1
                 CustomerCModel::update_user($user_id, [
-                    'point' => $user->point + 1,
+                    'point' => $user->point + 2,
                     'old_point' => $user->old_point + 1
                 ]);
 
@@ -803,10 +948,10 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
-                ->orderByRaw("RAND()")
+                ->orderByRaw("RANDOM()")
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
-                $listIdProfileInCity = $listIdProfileInCity->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+                $listIdProfileInCity = $listIdProfileInCity->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
             }
             $listIdProfileInCity = $listIdProfileInCity
                 ->limit(30)
@@ -836,7 +981,7 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $suggestId)
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
-                $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+                $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
             }
 
             $listIdProfileInCountry = $listIdProfileInCountry->limit(30)
@@ -859,12 +1004,12 @@ class CustomerController extends Controller
     {
         if (count($suggestId) < 30 && $profile->birthday) {
             $listInAgeRange = CustomerQModel::select('id')
-                ->whereRaw('YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) + 5 ')
+                ->whereRaw("EXTRACT(YEAR FROM TO_DATE(birthday, 'DD-MM-YYYY')) BETWEEN EXTRACT(YEAR FROM TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY')) - 5 AND EXTRACT(YEAR FROM TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY')) + 5")
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
                 ->where('id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
-                ->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC')
+                ->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listInAgeRange) {
@@ -915,6 +1060,37 @@ class CustomerController extends Controller
 //            if (count($suggestId) == 3) break;
         }
         return $suggestId;
+    }
+
+    public function generate_branch_io_link($id, $name)
+    {
+        $link = new Link();
+        $link->setType(UrlType::MARKETING);
+        $link->setChannel('Sharing');
+        $link->setFeature('Shareing');
+        $link->setCampaign('Share Link Get Point');
+        $link->setStage('Stage');
+        $data = [
+            '$always_deeplink' => true,
+            '$ios_url' => env('IOS_LINK'),
+            '$android_url' => env('ANDROID_LINK'),
+
+            '$og_app_id' => env('BRANCH_IO_APP_ID'),
+            '$og_title' => 'CafeLatteDev',
+            '$og_description' => 'Ứng dụng cafelatte kết bạn ghép đôi!',
+            '$og_image_url' => env('SHARE_LINK_IMAGE'),
+
+            '$app_id' => $id,
+            '$marketing_title' => $name . ' share link action'
+        ];
+        $link->setData($data);
+        return Branchio::createLink($link);
+    }
+
+
+    public function get_link_data($link)
+    {
+        return Branchio::getLink($link);
     }
 
 }
