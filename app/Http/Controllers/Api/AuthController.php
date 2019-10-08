@@ -190,7 +190,8 @@ class AuthController extends Controller
                 'facebook_token' => $facebook_token,
                 'firebase_uid' => $uid,
                 '_friend' => json_encode($friends),
-                'login_at' => date('Y-m-d H:i:s')
+                'login_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ];
 
             if (!$user->share_link) {
