@@ -2,7 +2,6 @@
 
 namespace app\Http\Controllers\Api;
 
-//use App\Http\Helpers\QuickBloxHelper;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
@@ -212,12 +211,10 @@ class AuthController extends Controller
         } else {
             // signup
             try {
-                //$quickBlox = new QuickBloxHelper();
                 $userEmail = $profile['id'].'@facebook.com';
                 if (isset($profile['email'])) {
                     $userEmail = $profile['email'];
                 }
-                //$chatId = $quickBlox->createNewUser($userEmail, $profile['id'], $profile['name']);
                 $data = [
                     'name' => $profile['name'],
                     'image' => json_encode(['https://graph.facebook.com/' . $profile['id'] . '/picture?type=large&width=720&height=720']),
