@@ -2,7 +2,6 @@
 
 namespace app\Http\Controllers\Api;
 
-use App\Http\Helpers\QuickBloxHelper;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
@@ -120,6 +119,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $facebook_token = $request->input('facebook_token');
+        $uid = $request->input('firebase_uid');
 
         if (!$facebook_token) {
             return ApiHelper::error(
@@ -187,8 +187,10 @@ class AuthController extends Controller
             $data_update = [
                 'token' => $token,
                 'facebook_token' => $facebook_token,
+                'firebase_uid' => $uid,
                 '_friend' => json_encode($friends),
-                'login_at' => date('Y-m-d H:i:s')
+                'login_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ];
 
             if (!$user->share_link) {
@@ -209,18 +211,16 @@ class AuthController extends Controller
         } else {
             // signup
             try {
-                $quickBlox = new QuickBloxHelper();
                 $userEmail = $profile['id'].'@facebook.com';
                 if (isset($profile['email'])) {
                     $userEmail = $profile['email'];
                 }
-                $chatId = $quickBlox->createNewUser($userEmail, $profile['id'], $profile['name']);
                 $data = [
                     'name' => $profile['name'],
                     'image' => json_encode(['https://graph.facebook.com/' . $profile['id'] . '/picture?type=large&width=720&height=720']),
                     'facebook_id' => $profile['id'],
                     'email' => $userEmail,
-                    'chat_id' => $chatId,
+                    'firebase_uid' => $uid,
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
