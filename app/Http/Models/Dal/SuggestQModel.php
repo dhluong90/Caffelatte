@@ -166,6 +166,18 @@ class SuggestQModel extends Model
         return $query->get();
     }
 
+    public static function get_who_like_me($user_id)
+    {
+        $query = DB::table('customers as u')
+            ->select('u.*')
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->select('s.*')
+            ->where('s.status', '=', 2)
+            ->where('s.matching_id', '=', $user_id)
+            ->orderBy('s.updated_at', 'ASC');
+        return $query->get();
+    }
+
     /**
      * get_current_suggest
      * @param $user_id

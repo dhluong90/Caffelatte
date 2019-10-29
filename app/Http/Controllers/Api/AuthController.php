@@ -76,6 +76,15 @@ class AuthController extends Controller
                 'token' => $token,
                 'login_at' => date('Y-m-d H:i:s')
             ];
+
+            if (!$user->share_link) {
+                $share_link = $this->generate_branch_io_link($user->id, $user->name);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+            }
+
             // moved branch io to set up at the end of process
             CustomerCModel::update_user($user->id, $data_update);
             $user = CustomerQModel::get_user_by_phone($phone);

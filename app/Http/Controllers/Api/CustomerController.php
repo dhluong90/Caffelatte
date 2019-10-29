@@ -190,7 +190,7 @@ class CustomerController extends Controller
             );
         }
 
-        if (empty($data)) {
+        if (!is_numeric($data) && empty($data)) {
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.param_wrong'),
@@ -313,7 +313,7 @@ class CustomerController extends Controller
             );
         }
 
-        if (empty($data)) {
+        if (!is_numeric($data) && empty($data)) {
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.param_wrong'),
@@ -589,6 +589,25 @@ class CustomerController extends Controller
         return ApiHelper::success($list);
     }
 
+    public function list_who_likes_me(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        //print_r($user_id );
+        $list = SuggestQModel::get_who_like_me($user_id);
+        //print_r($list);
+        $result = [];
+
+        foreach ($list as $item) {
+            $user = CustomerQModel::get_user_by_id($item->user_id);
+            array_push($result, $user);
+        }
+        if (!$result) {
+            return ApiHelper::success([]);
+        }
+
+        return ApiHelper::success($result);
+    }
+
     public function suggest(Request $request)
     {
         $current_time = time();
@@ -829,7 +848,7 @@ class CustomerController extends Controller
         if ($user->point_at != date('Y-m-d', $current_time)) {
             // new date, reset old_point
             CustomerCModel::update_user($user_id, [
-                'point' => $user->point + 1,
+                'point' => $user->point + 2,
                 'old_point' => 1,
                 'point_at' => date('Y-m-d', $current_time)
             ]);
