@@ -90,6 +90,28 @@ class CustomerController extends Controller
         return ApiHelper::success($user);
     }
 
+    /**
+     * @param Request $request
+     * @param $id
+     * @return \App\Http\Helpers\json
+     */
+    public function profile_by_firebase_uid(Request $request, $ids)
+    {
+        $listId = explode(",", $ids);
+        $user = CustomerQModel::get_users_by_firebase_uid($listId);
+        if (!$user) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'chat id not found',
+                404
+            );
+        }
+
+        $user = ApiHelper::clear_data_member($user);
+
+        return ApiHelper::success($user);
+    }
+
     public function update(Request $request)
     {
         $user_id = $request->input('user_id');

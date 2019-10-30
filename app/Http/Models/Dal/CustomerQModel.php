@@ -158,6 +158,13 @@ class CustomerQModel extends Model
             ->get();
     }
 
+    public static function get_users_by_firebase_uid($listId)
+    {
+        return DB::table('customers')
+            ->whereIn('firebase_uid', $listId)
+            ->get();
+    }
+
     public static function get_user_by_share_link_id($link_id)
     {
         return DB::table('customers')->where('share_link_id', '=', $link_id)->first();
