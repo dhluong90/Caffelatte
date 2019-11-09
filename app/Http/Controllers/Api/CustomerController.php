@@ -430,7 +430,7 @@ class CustomerController extends Controller
                     break;
                 }
                 if (!$found) {
-                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                    $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                         ->push([[
                             'content' => '',
                             'fromID' => $user_current->firebase_uid,
@@ -438,7 +438,13 @@ class CustomerController extends Controller
                             'timestamp' => time(),
                             'toID' => $user_matching->firebase_uid,
                             'type' => 'text'
-                        ]]);
+                        ]])->getKey();
+                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                        ->getChild($user_current->firebase_uid.'/Conversations')->update([
+                            $user_matching->firebase_uid => ['location' => $conversationID]]);
+                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                        ->getChild($user_matching->firebase_uid.'/Conversations')->update([
+                            $user_current->firebase_uid => ['location' => $conversationID]]);
                 }
             }
 
