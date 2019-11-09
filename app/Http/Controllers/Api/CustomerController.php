@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Helpers\FirebaseDatabaseHelper;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
@@ -411,6 +412,41 @@ class CustomerController extends Controller
                 'status' => config('constant.suggest.status.approved'),
                 'updated_at' => date('Y-m-d', time())
             ]);
+
+            if ($user_current->firebase_uid && $user_matching->firebase_uid) {
+                $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                    ->getValue();
+                $found = false;
+                foreach($value as $item) {
+                    if(count($item) > 0 ) {
+                        $fromId = $item[key($item)]['fromID'];
+                        $toId = $item[key($item)]['toID'];
+                        if (($fromId == $user_current->firebase_uid && $toId == $user_matching->firebase_uid) ||
+                            ($toId == $user_current->firebase_uid && $fromId == $user_matching->firebase_uid)
+                        ) {
+                            $found = true;
+                        }
+                    }
+                    break;
+                }
+                if (!$found) {
+                    $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                        ->push([[
+                            'content' => '',
+                            'fromID' => $user_current->firebase_uid,
+                            'seen' => false,
+                            'timestamp' => time(),
+                            'toID' => $user_matching->firebase_uid,
+                            'type' => 'text'
+                        ]])->getKey();
+                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                        ->getChild($user_current->firebase_uid.'/Conversations')->update([
+                            $user_matching->firebase_uid => ['location' => $conversationID]]);
+                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                        ->getChild($user_matching->firebase_uid.'/Conversations')->update([
+                            $user_current->firebase_uid => ['location' => $conversationID]]);
+                }
+            }
 
             // delete suggest if exist record
             $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));

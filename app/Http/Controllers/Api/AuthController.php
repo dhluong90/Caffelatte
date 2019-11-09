@@ -2,6 +2,8 @@
 
 namespace app\Http\Controllers\Api;
 
+use App\Http\Helpers\Constants;
+use App\Http\Helpers\FirebaseDatabaseHelper;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
@@ -21,6 +23,7 @@ use Kreait\Firebase\ServiceAccount;
 
 class AuthController extends Controller
 {
+
     /**
      * Create a new controller instance.
      *
@@ -44,7 +47,7 @@ class AuthController extends Controller
             );
         }
 
-        $serviceAccount = ServiceAccount::fromJsonFile(__DIR__ . '/cafe-latte-198808-firebase-adminsdk-l67b1-d8841a097d.json');
+        $serviceAccount = FirebaseDatabaseHelper::get_service_account();
         $firebase = (new Factory)->withServiceAccount($serviceAccount)->create();
         $auth = $firebase->getAuth();
         try {
