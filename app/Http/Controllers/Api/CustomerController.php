@@ -725,7 +725,6 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $suggests)
                 ->whereNotIn('id', $react)
                 ->where('gender', '<>', $user->gender)
-                ->whereNotNull('firebase_uid')
                 ->orderByRaw('weightPoint DESC')
                 ->get();
             $listFriendOfFriendIds = $listFriendOfFriends->pluck('id')->toArray();
@@ -1026,7 +1025,6 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
-                ->whereNotNull('firebase_uid')
                 ->orderByRaw("RANDOM()")
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
@@ -1058,7 +1056,6 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
-                ->whereNotNull('firebase_uid')
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
@@ -1089,7 +1086,6 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $suggestId)
                 ->where('id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
-                ->whereNotNull('firebase_uid')
                 ->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
                 ->limit(30)
                 ->get()->pluck('id');
@@ -1115,7 +1111,6 @@ class CustomerController extends Controller
                 ->whereNotIn('customers.id', $suggestId)
                 ->where('customers.id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
-                ->whereNotNull('firebase_uid')
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listRandomId) {
