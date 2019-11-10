@@ -37,7 +37,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('/discover', 'Api\CustomerController@discover');
         Route::get('/profile/{id}', 'Api\CustomerController@profile');
         Route::get('/profile_by_chat_id/{textId}', 'Api\CustomerController@profile_by_chat_id');
-        Route::get('/profile_by_firebase_uid/{ids}', 'Api\CustomerController@profile_by_firebase_uid');
+        Route::get('/profile_by_ids/{ids}', 'Api\CustomerController@profile_by_ids');
         Route::post('/like', 'Api\CustomerController@like');
         Route::post('/pass', 'Api\CustomerController@pass');
         Route::post('/unmatch', 'Api\CustomerController@unmatch');
