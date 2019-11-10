@@ -96,10 +96,10 @@ class CustomerController extends Controller
      * @param $id
      * @return \App\Http\Helpers\json
      */
-    public function profile_by_firebase_uid(Request $request, $ids)
+    public function profile_by_ids(Request $request, $ids)
     {
         $listId = explode(",", $ids);
-        $user = CustomerQModel::get_users_by_firebase_uid($listId);
+        $user = CustomerQModel::get_users_by_ids($listId);
         if (!$user) {
             return ApiHelper::error(
                 config('constant.error_type.not_found'), 404,
