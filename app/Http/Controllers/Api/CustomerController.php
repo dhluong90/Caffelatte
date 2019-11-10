@@ -467,7 +467,7 @@ class CustomerController extends Controller
                 ]);
             }
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => $user_matching->id]);
         }
 
         // case 2: user matching have suggested for current user
@@ -482,7 +482,7 @@ class CustomerController extends Controller
             }
 
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null]);
         }
 
         // case 3: user matching is discover by current user
@@ -508,7 +508,7 @@ class CustomerController extends Controller
                 'point' => $user_current->point - 1
             ]);
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null]);
         }
 
         return ApiHelper::error(
