@@ -413,39 +413,37 @@ class CustomerController extends Controller
                 'updated_at' => date('Y-m-d', time())
             ]);
 
-            if ($user_current->id && $user_matching->id) {
-                $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
-                    ->getValue();
-                $found = false;
-                foreach($value as $item) {
-                    if(count($item) > 0 ) {
-                        $fromId = $item[key($item)]['fromID'];
-                        $toId = $item[key($item)]['toID'];
-                        if (($fromId == $user_current->id && $toId == $user_matching->id) ||
-                            ($toId == $user_current->id && $fromId == $user_matching->id)
-                        ) {
-                            $found = true;
-                        }
+            $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                ->getValue();
+            $found = false;
+            foreach($value as $item) {
+                if(count($item) > 0 ) {
+                    $fromId = $item[key($item)]['fromID'];
+                    $toId = $item[key($item)]['toID'];
+                    if (($fromId == $user_current->id && $toId == $user_matching->id) ||
+                        ($toId == $user_current->id && $fromId == $user_matching->id)
+                    ) {
+                        $found = true;
                     }
-                    break;
                 }
-                if (!$found) {
-                    $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
-                        ->push([[
-                            'content' => '',
-                            'fromID' => $user_current->id,
-                            'seen' => false,
-                            'timestamp' => time(),
-                            'toID' => $user_matching->id,
-                            'type' => 'text'
-                        ]])->getKey();
-                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                        ->getChild($user_current->id.'/Conversations')->update([
-                            $user_matching->id => ['location' => $conversationID]]);
-                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                        ->getChild($user_matching->id.'/Conversations')->update([
-                            $user_current->id => ['location' => $conversationID]]);
-                }
+                break;
+            }
+            if (!$found) {
+                $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                    ->push([[
+                        'content' => '',
+                        'fromID' => $user_current->id,
+                        'seen' => false,
+                        'timestamp' => time(),
+                        'toID' => $user_matching->id,
+                        'type' => 'text'
+                    ]])->getKey();
+                FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_current->id.'/Conversations')->update([
+                        $user_matching->id => ['location' => $conversationID]]);
+                FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_matching->id.'/Conversations')->update([
+                        $user_current->id => ['location' => $conversationID]]);
             }
 
             // delete suggest if exist record
