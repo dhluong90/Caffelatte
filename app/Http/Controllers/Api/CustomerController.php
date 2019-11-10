@@ -436,7 +436,7 @@ class CustomerController extends Controller
                         'seen' => false,
                         'timestamp' => time(),
                         'toID' => $user_matching->id,
-                        'type' => 'text'
+                        'type' => 'init'
                     ]])->getKey();
                 FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
                     ->getChild($user_current->id.'/Conversations')->update([
