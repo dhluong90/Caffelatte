@@ -413,7 +413,7 @@ class CustomerController extends Controller
                 'updated_at' => date('Y-m-d', time())
             ]);
 
-            if ($user_current->firebase_uid && $user_matching->firebase_uid) {
+            if ($user_current->id && $user_matching->id) {
                 $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                     ->getValue();
                 $found = false;
@@ -421,8 +421,8 @@ class CustomerController extends Controller
                     if(count($item) > 0 ) {
                         $fromId = $item[key($item)]['fromID'];
                         $toId = $item[key($item)]['toID'];
-                        if (($fromId == $user_current->firebase_uid && $toId == $user_matching->firebase_uid) ||
-                            ($toId == $user_current->firebase_uid && $fromId == $user_matching->firebase_uid)
+                        if (($fromId == $user_current->id && $toId == $user_matching->id) ||
+                            ($toId == $user_current->id && $fromId == $user_matching->id)
                         ) {
                             $found = true;
                         }
@@ -433,18 +433,18 @@ class CustomerController extends Controller
                     $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                         ->push([[
                             'content' => '',
-                            'fromID' => $user_current->firebase_uid,
+                            'fromID' => $user_current->id,
                             'seen' => false,
                             'timestamp' => time(),
-                            'toID' => $user_matching->firebase_uid,
+                            'toID' => $user_matching->id,
                             'type' => 'text'
                         ]])->getKey();
                     FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                        ->getChild($user_current->firebase_uid.'/Conversations')->update([
-                            $user_matching->firebase_uid => ['location' => $conversationID]]);
+                        ->getChild($user_current->id.'/Conversations')->update([
+                            $user_matching->id => ['location' => $conversationID]]);
                     FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                        ->getChild($user_matching->firebase_uid.'/Conversations')->update([
-                            $user_current->firebase_uid => ['location' => $conversationID]]);
+                        ->getChild($user_matching->id.'/Conversations')->update([
+                            $user_current->id => ['location' => $conversationID]]);
                 }
             }
 
@@ -725,6 +725,7 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $suggests)
                 ->whereNotIn('id', $react)
                 ->where('gender', '<>', $user->gender)
+                ->whereNotNull('firebase_uid')
                 ->orderByRaw('weightPoint DESC')
                 ->get();
             $listFriendOfFriendIds = $listFriendOfFriends->pluck('id')->toArray();
@@ -1025,6 +1026,7 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotNull('firebase_uid')
                 ->orderByRaw("RANDOM()")
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
@@ -1056,6 +1058,7 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotNull('firebase_uid')
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
@@ -1086,6 +1089,7 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $suggestId)
                 ->where('id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
+                ->whereNotNull('firebase_uid')
                 ->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
                 ->limit(30)
                 ->get()->pluck('id');
@@ -1111,6 +1115,7 @@ class CustomerController extends Controller
                 ->whereNotIn('customers.id', $suggestId)
                 ->where('customers.id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
+                ->whereNotNull('firebase_uid')
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listRandomId) {
