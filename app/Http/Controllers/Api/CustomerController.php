@@ -429,21 +429,30 @@ class CustomerController extends Controller
                 break;
             }
             if (!$found) {
-                $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
-                    ->push([[
-                        'content' => '',
-                        'fromID' => $user_current->id,
-                        'seen' => false,
-                        'timestamp' => time(),
-                        'toID' => $user_matching->id,
-                        'type' => 'init'
-                    ]])->getKey();
+                // Check if those users chatted before
+                $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_current->id.'/Conversations')
+                    ->getChild($user_matching->id.'/location')->getValue();
+
+                // If not, init new conversation between them
+                if(empty($conversationID)) {
+                    $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                        ->push([[
+                            'content' => '',
+                            'fromID' => $user_current->id,
+                            'seen' => false,
+                            'timestamp' => time(),
+                            'toID' => $user_matching->id,
+                            'type' => 'init'
+                        ]])->getKey();
+                }
+
                 FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
                     ->getChild($user_current->id.'/Conversations')->update([
-                        $user_matching->id => ['location' => $conversationID]]);
+                        $user_matching->id => ['location' => $conversationID, 'isDisabled' => false]]);
                 FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
                     ->getChild($user_matching->id.'/Conversations')->update([
-                        $user_current->id => ['location' => $conversationID]]);
+                        $user_current->id => ['location' => $conversationID, 'isDisabled' => false]]);
             }
 
             // delete suggest if exist record
@@ -611,6 +620,33 @@ class CustomerController extends Controller
             'status' => config('constant.suggest.status.unmatch'),
             'updated_at' => date('Y-m-d', time())
         ]);
+
+        $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                  ->getValue();
+        $found = false;
+        foreach($value as $item) {
+            if(count($item) > 0 ) {
+                $fromId = $item[key($item)]['fromID'];
+                $toId = $item[key($item)]['toID'];
+                if (($fromId == $user_current->id && $toId == $user_matching->id) ||
+                    ($toId == $user_current->id && $fromId == $user_matching->id)
+                ) {
+                    $found = true;
+                }
+            }
+            break;
+        }
+        if (!$found) {
+            // When unmatch, two user will disabled each other
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_current->id.'/Conversations')
+                ->getChild($user_matching->id.'/isDisabled')
+                ->set(true);
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_matching->id.'/Conversations')
+                ->getChild($user_current->id.'/isDisabled')
+                ->set(true);
+        }
 
         return ApiHelper::success(['message' => 'success']);
     }
