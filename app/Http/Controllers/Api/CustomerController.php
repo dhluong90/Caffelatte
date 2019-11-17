@@ -607,22 +607,20 @@ class CustomerController extends Controller
         }
 
         $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')->getValue();
-        $test = array("Hehe");
         $found = false;
         foreach($value as $item) {
             if(count($item) > 0 ) {
                 $fromId = $item[key($item)]['fromID'];
                 $toId = $item[key($item)]['toID'];
-                array_push($test, $fromId . '-' . $toId);
                 if (($fromId == $user_id && $toId == $user_matching->id) ||
                     ($toId == $user_id && $fromId == $user_matching->id)
                 ) {
                     $found = true;
+                    break;
                 }
             }
-            break;
         }
-        if (!$found) {
+        if ($found) {
             // When unmatch, two user will disabled each other
             FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
                 ->getChild($user_id.'/Conversations')
@@ -642,7 +640,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        return ApiHelper::success(['message' => 'success | ' . $user_id . '-' . $user_matching->id . ' | found ' . $found]);
+        return ApiHelper::success(['message' => 'success']);
     }
 
     public function list_unmatch(Request $request)
