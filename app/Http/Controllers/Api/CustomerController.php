@@ -620,7 +620,7 @@ class CustomerController extends Controller
             }
             break;
         }
-        if (!$found) {
+        if ($found) {
             // When unmatch, two user will disabled each other
             FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
                 ->getChild($user_id.'/Conversations')
