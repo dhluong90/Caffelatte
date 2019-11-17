@@ -622,15 +622,14 @@ class CustomerController extends Controller
         }
         if (!$found) {
             // When unmatch, two user will disabled each other
-            $snapshotUser = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')->getChild($user_id.'/Conversations')->getChild($user_matching->id);
-            if ($snapshotUser.exists()) {
-                $snapshotUser->getChild('isDisabled')->set(true);
-            }
-
-            $snapshotUserMatching = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')->getChild($user_matching->id.'/Conversations')->getChild($user_id);
-            if ($snapshotUserMatching.exists()) {
-                $snapshotUserMatching->getChild('isDisabled')->set(true);
-            }
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_id.'/Conversations')
+                ->getChild($user_matching->id.'/isDisabled')
+                ->set(true);
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_matching->id.'/Conversations')
+                ->getChild($user_id.'/isDisabled')
+                ->set(true);
         }
 
         $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
@@ -641,7 +640,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        return ApiHelper::success(['message' => 'success']);
+        return ApiHelper::success(['message' => 'success' . $user_id . '-' . $user_matching->id]);
     }
 
     public function list_unmatch(Request $request)
