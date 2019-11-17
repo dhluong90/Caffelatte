@@ -642,7 +642,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        return ApiHelper::success(['message' => 'success | ' . $user_id . '-' . $user_matching->id . ' | ' . $test . ' | found ' . $found]);
+        return ApiHelper::success(['message' => 'success | ' . $user_id . '-' . $user_matching->id . ' | found ' . $found]);
     }
 
     public function list_unmatch(Request $request)
