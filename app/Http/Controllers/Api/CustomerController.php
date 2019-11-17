@@ -606,30 +606,14 @@ class CustomerController extends Controller
             );
         }
 
-        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
-
-        if (!$item) {
-            return ApiHelper::error(
-                config('constant.error_type.not_found'), 404,
-                'user matching can not unmatch',
-                404
-            );
-        }
-
-        SuggestCModel::update_suggest($item->id, [
-            'status' => config('constant.suggest.status.unmatch'),
-            'updated_at' => date('Y-m-d', time())
-        ]);
-
-        $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
-                  ->getValue();
+        $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')->getValue();
         $found = false;
         foreach($value as $item) {
             if(count($item) > 0 ) {
                 $fromId = $item[key($item)]['fromID'];
                 $toId = $item[key($item)]['toID'];
-                if (($fromId == $user_current->id && $toId == $user_matching->id) ||
-                    ($toId == $user_current->id && $fromId == $user_matching->id)
+                if (($fromId == $user_id && $toId == $user_matching->id) ||
+                    ($toId == $user_id && $fromId == $user_matching->id)
                 ) {
                     $found = true;
                 }
@@ -639,13 +623,21 @@ class CustomerController extends Controller
         if (!$found) {
             // When unmatch, two user will disabled each other
             FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                ->getChild($user_current->id.'/Conversations')
+                ->getChild($user_id.'/Conversations')
                 ->getChild($user_matching->id.'/isDisabled')
                 ->set(true);
             FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
                 ->getChild($user_matching->id.'/Conversations')
-                ->getChild($user_current->id.'/isDisabled')
+                ->getChild($user_id.'/isDisabled')
                 ->set(true);
+        }
+
+        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
+        if ($item) {
+            SuggestCModel::update_suggest($item->id, [
+                'status' => config('constant.suggest.status.unmatch'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
         }
 
         return ApiHelper::success(['message' => 'success']);
