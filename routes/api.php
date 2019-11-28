@@ -49,6 +49,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/point/add', 'Api\CustomerController@add_point');
         Route::post('/upload/avatar', 'Api\CustomerController@upload_avatar');
         Route::delete('/upload/avatar', 'Api\CustomerController@delete_avatar');
+        Route::post('/sendNotification', 'Api\CustomerController@send_notification');
     });
 });
 

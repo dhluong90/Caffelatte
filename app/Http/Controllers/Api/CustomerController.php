@@ -1196,4 +1196,24 @@ class CustomerController extends Controller
         return Branchio::getLink($link);
     }
 
+
+    /**
+     * Send notification to other when give a message to them
+     * @param $request request json
+     * @return void
+     */
+    public function send_notification(Request $request)
+    {
+        $message = json_decode(request()->getContent(), true);
+        $user_id = $message['toID'];
+        $user = CustomerQModel::get_user_by_id($user_id);
+        $fcm_token = $user->fcm_token;
+        $notification = [
+            'title' => $user->name,
+            'body' => $message['content'],
+            'sound' => true
+        ];
+        $data = [];
+        NotificationHelper::send($fcm_token, $notification, $data);
+    }
 }
