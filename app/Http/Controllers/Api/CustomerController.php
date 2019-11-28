@@ -1214,6 +1214,16 @@ class CustomerController extends Controller
             'sound' => true
         ];
         $data = [];
-        NotificationHelper::send($fcm_token, $notification, $data);
+        $result = NotificationHelper::send($fcm_token, $notification, $data);
+        if($result){
+            return ApiHelper::success(['message' => 'success']);
+        } else {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
     }
 }
