@@ -1205,15 +1205,34 @@ class CustomerController extends Controller
     public function send_notification(Request $request)
     {
         $message = json_decode(request()->getContent(), true);
-        $user_id = $message['toID'];
-        $user = CustomerQModel::get_user_by_id($user_id);
-        $fcm_token = $user->fcm_token;
+
+        $user_send_id = $message['fromID'];
+        $user_send = CustomerQModel::get_user_by_id($user_send_id);
+        $user_received_id = $message['toID'];
+        $user_received = CustomerQModel::get_user_by_id($user_received_id);
+        $fcm_token = $user_received->fcm_token;
+
+        //Decide body content based on message type
+        $message_type = $message['type'];
+        $message_body = '';
+        switch($message_type){
+            case 'photo':
+                $message_body = "Sent you a photo";
+                break;
+            case 'sticker':
+                $message_body = "Sent you a sticker";
+                break;
+            default:
+                $message_body = $message['content'];
+        }
+
         $notification = [
-            'title' => $user->name,
-            'body' => $message['content'],
+            'title' => $user_send->name,
+            'body' => $message_body,
             'sound' => true
         ];
-        $data = [];
+
+        $data = $request;
         $result = NotificationHelper::send($fcm_token, $notification, $data);
         if($result){
             return ApiHelper::success(['message' => 'success']);
