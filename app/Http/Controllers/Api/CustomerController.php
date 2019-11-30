@@ -1212,10 +1212,19 @@ class CustomerController extends Controller
         $user_received = CustomerQModel::get_user_by_id($user_received_id);
         $fcm_token = $user_received->fcm_token;
 
+        if (empty($fcm_token)) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'receiver have no fcm token',
+                400
+            );
+        }
+
         //Decide body content based on message type
         $message_type = $message['type'];
         $message_body = '';
-        switch($message_type){
+        switch ($message_type) {
             case 'photo':
                 $message_body = "Sent you a photo";
                 break;
@@ -1232,9 +1241,8 @@ class CustomerController extends Controller
             'sound' => true
         ];
 
-        $data = $request;
-        $result = NotificationHelper::send($fcm_token, $notification, $data);
-        if($result){
+        $result = NotificationHelper::send($fcm_token, $notification, request()->getContent());
+        if ($result) {
             return ApiHelper::success(['message' => 'success']);
         } else {
             return ApiHelper::error(
@@ -1244,5 +1252,6 @@ class CustomerController extends Controller
                 400
             );
         }
+
     }
 }
