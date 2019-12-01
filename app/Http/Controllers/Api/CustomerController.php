@@ -1210,14 +1210,24 @@ class CustomerController extends Controller
         $user_send = CustomerQModel::get_user_by_id($user_send_id);
         $user_received_id = $message['toID'];
         $user_received = CustomerQModel::get_user_by_id($user_received_id);
+
+        if(empty($user_send) || empty($user_received)) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'The requested user is not found',
+                500
+            );
+        }
+
         $fcm_token = $user_received->fcm_token;
 
         if (empty($fcm_token)) {
             return ApiHelper::error(
-                config('constant.error_type.bad_request'),
-                config('constant.error_code.auth.param_wrong'),
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
                 'receiver have no fcm token',
-                400
+                500
             );
         }
 
@@ -1246,10 +1256,10 @@ class CustomerController extends Controller
             return ApiHelper::success(['message' => 'success']);
         } else {
             return ApiHelper::error(
-                config('constant.error_type.bad_request'),
-                config('constant.error_code.auth.param_wrong'),
-                'param wrong',
-                400
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'Fail to send notification',
+                500
             );
         }
 
