@@ -96,10 +96,10 @@ class CustomerController extends Controller
      * @param $id
      * @return \App\Http\Helpers\json
      */
-    public function profile_by_firebase_uid(Request $request, $ids)
+    public function profile_by_ids(Request $request, $ids)
     {
         $listId = explode(",", $ids);
-        $user = CustomerQModel::get_users_by_firebase_uid($listId);
+        $user = CustomerQModel::get_users_by_ids($listId);
         if (!$user) {
             return ApiHelper::error(
                 config('constant.error_type.not_found'), 404,
@@ -413,39 +413,46 @@ class CustomerController extends Controller
                 'updated_at' => date('Y-m-d', time())
             ]);
 
-            if ($user_current->firebase_uid && $user_matching->firebase_uid) {
-                $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
-                    ->getValue();
-                $found = false;
-                foreach($value as $item) {
-                    if(count($item) > 0 ) {
-                        $fromId = $item[key($item)]['fromID'];
-                        $toId = $item[key($item)]['toID'];
-                        if (($fromId == $user_current->firebase_uid && $toId == $user_matching->firebase_uid) ||
-                            ($toId == $user_current->firebase_uid && $fromId == $user_matching->firebase_uid)
-                        ) {
-                            $found = true;
-                        }
+            $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                ->getValue();
+            $found = false;
+            foreach($value as $item) {
+                if(count($item) > 0 ) {
+                    $fromId = $item[key($item)]['fromID'];
+                    $toId = $item[key($item)]['toID'];
+                    if (($fromId == $user_current->id && $toId == $user_matching->id) ||
+                        ($toId == $user_current->id && $fromId == $user_matching->id)
+                    ) {
+                        $found = true;
                     }
-                    break;
                 }
-                if (!$found) {
+                break;
+            }
+            if (!$found) {
+                // Check if those users chatted before
+                $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_current->id.'/Conversations')
+                    ->getChild($user_matching->id.'/location')->getValue();
+
+                // If not, init new conversation between them
+                if(empty($conversationID)) {
                     $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                         ->push([[
                             'content' => '',
-                            'fromID' => $user_current->firebase_uid,
+                            'fromID' => $user_current->id,
                             'seen' => false,
                             'timestamp' => time(),
-                            'toID' => $user_matching->firebase_uid,
-                            'type' => 'text'
+                            'toID' => $user_matching->id,
+                            'type' => 'init'
                         ]])->getKey();
-                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                        ->getChild($user_current->firebase_uid.'/Conversations')->update([
-                            $user_matching->firebase_uid => ['location' => $conversationID]]);
-                    FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
-                        ->getChild($user_matching->firebase_uid.'/Conversations')->update([
-                            $user_current->firebase_uid => ['location' => $conversationID]]);
                 }
+
+                FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_current->id.'/Conversations')->update([
+                        $user_matching->id => ['location' => $conversationID, 'isDisabled' => false]]);
+                FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_matching->id.'/Conversations')->update([
+                        $user_current->id => ['location' => $conversationID, 'isDisabled' => false]]);
             }
 
             // delete suggest if exist record
@@ -469,7 +476,7 @@ class CustomerController extends Controller
                 ]);
             }
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => $user_matching->id]);
         }
 
         // case 2: user matching have suggested for current user
@@ -484,7 +491,7 @@ class CustomerController extends Controller
             }
 
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null]);
         }
 
         // case 3: user matching is discover by current user
@@ -510,7 +517,7 @@ class CustomerController extends Controller
                 'point' => $user_current->point - 1
             ]);
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null]);
         }
 
         return ApiHelper::error(
@@ -599,20 +606,39 @@ class CustomerController extends Controller
             );
         }
 
-        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
-
-        if (!$item) {
-            return ApiHelper::error(
-                config('constant.error_type.not_found'), 404,
-                'user matching can not unmatch',
-                404
-            );
+        $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')->getValue();
+        $found = false;
+        foreach($value as $item) {
+            if(count($item) > 0 ) {
+                $fromId = $item[key($item)]['fromID'];
+                $toId = $item[key($item)]['toID'];
+                if (($fromId == $user_id && $toId == $user_matching->id) ||
+                    ($toId == $user_id && $fromId == $user_matching->id)
+                ) {
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if ($found) {
+            // When unmatch, two user will disabled each other
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_id.'/Conversations')
+                ->getChild($user_matching->id.'/isDisabled')
+                ->set(true);
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_matching->id.'/Conversations')
+                ->getChild($user_id.'/isDisabled')
+                ->set(true);
         }
 
-        SuggestCModel::update_suggest($item->id, [
-            'status' => config('constant.suggest.status.unmatch'),
-            'updated_at' => date('Y-m-d', time())
-        ]);
+        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
+        if ($item) {
+            SuggestCModel::update_suggest($item->id, [
+                'status' => config('constant.suggest.status.unmatch'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+        }
 
         return ApiHelper::success(['message' => 'success']);
     }
@@ -1170,4 +1196,62 @@ class CustomerController extends Controller
         return Branchio::getLink($link);
     }
 
+
+    /**
+     * Send notification to other when give a message to them
+     * @param $request request json
+     * @return void
+     */
+    public function send_notification(Request $request)
+    {
+        $message = json_decode(request()->getContent(), true);
+
+        $user_send_id = $message['fromID'];
+        $user_send = CustomerQModel::get_user_by_id($user_send_id);
+        $user_received_id = $message['toID'];
+        $user_received = CustomerQModel::get_user_by_id($user_received_id);
+        $fcm_token = $user_received->fcm_token;
+
+        if (empty($fcm_token)) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'receiver have no fcm token',
+                400
+            );
+        }
+
+        //Decide body content based on message type
+        $message_type = $message['type'];
+        $message_body = '';
+        switch ($message_type) {
+            case 'photo':
+                $message_body = "Sent you a photo";
+                break;
+            case 'sticker':
+                $message_body = "Sent you a sticker";
+                break;
+            default:
+                $message_body = $message['content'];
+        }
+
+        $notification = [
+            'title' => $user_send->name,
+            'body' => $message_body,
+            'sound' => true
+        ];
+
+        $result = NotificationHelper::send($fcm_token, $notification, request()->getContent());
+        if ($result) {
+            return ApiHelper::success(['message' => 'success']);
+        } else {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
+
+    }
 }

@@ -158,10 +158,10 @@ class CustomerQModel extends Model
             ->get();
     }
 
-    public static function get_users_by_firebase_uid($listId)
+    public static function get_users_by_ids($listId)
     {
         return DB::table('customers')
-            ->whereIn('firebase_uid', $listId)
+            ->whereIn('id', $listId)
             ->get();
     }
 
