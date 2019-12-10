@@ -469,16 +469,32 @@ class CustomerController extends Controller
 
             // todo realtime
             if ($user_current->fcm_token) {
-                $result = NotificationHelper::send($user_matching->fcm_token, [
+                // a notification include notification payload & data payload. type default contain both.
+                $notification_type = $request->input('notification_type', 'default');
+                $notification = [
                     'title' => 'Cafelatte',
                     'body' => $user_current->name . ' like you'
-                ], [
+                ];
+                $data = [
                     'user_id' => $user_current->id,
                     'chat_id' => $user_current->chat_id,
                     'user_matching_id' => $user_matching->id,
                     'matching_chat_id' => $user_matching->chat_id,
                     'type' => 'like'
-                ]);
+                ];
+                if ($notification_type === 'data') {
+                    $notification = null;
+                    $data = [
+                        'title' => 'Cafelatte',
+                        'body' => $user_current->name . ' like you',
+                        'user_id' => $user_current->id,
+                        'chat_id' => $user_current->chat_id,
+                        'user_matching_id' => $user_matching->id,
+                        'matching_chat_id' => $user_matching->chat_id,
+                        'type' => 'like'
+                    ];
+                }
+                $result = NotificationHelper::send($user_matching->fcm_token, $notification, $data);
             }
 
             return ApiHelper::success(['message' => 'success', 'user_id' => $user_matching->id, 'remain_like' => $user_current->point]);
