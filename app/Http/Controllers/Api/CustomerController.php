@@ -191,6 +191,9 @@ class CustomerController extends Controller
         if ($request->input('email')) {
             $data['email'] = $request->input('email');
         }
+        if ($request->input('_interests') && is_array($request->input('_interests'))) {
+            $data['_interests'] = json_encode($request->input('_interests'));
+        }
 
         if ($request->input('height')) {
             $data['height'] = intval($request->input('height'));
@@ -470,13 +473,15 @@ class CustomerController extends Controller
                     'title' => 'Cafelatte',
                     'body' => $user_current->name . ' like you'
                 ], [
+                    'user_id' => $user_current->id,
                     'chat_id' => $user_current->chat_id,
+                    'user_matching_id' => $user_matching->id,
                     'matching_chat_id' => $user_matching->chat_id,
                     'type' => 'like'
                 ]);
             }
 
-            return ApiHelper::success(['message' => 'success', 'user_id' => $user_matching->id]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => $user_matching->id, 'remain_like' => $user_current->point]);
         }
 
         // case 2: user matching have suggested for current user
@@ -491,7 +496,7 @@ class CustomerController extends Controller
             }
 
 
-            return ApiHelper::success(['message' => 'success', 'user_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null, 'remain_like' => $user_current->point]);
         }
 
         // case 3: user matching is discover by current user
@@ -502,7 +507,7 @@ class CustomerController extends Controller
                 return ApiHelper::error(
                     config('constant.error_type.bad_request'),
                     config('constant.error_code.customer.point_not_enough'),
-                    'user not enough point',
+                    __('like.point_not_enough'),
                     400
                 );
             }
@@ -517,7 +522,7 @@ class CustomerController extends Controller
                 'point' => $user_current->point - 1
             ]);
 
-            return ApiHelper::success(['message' => 'success', 'user_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null, 'remain_like' => $user_current->point - 1]);
         }
 
         return ApiHelper::error(
@@ -638,6 +643,13 @@ class CustomerController extends Controller
                 'status' => config('constant.suggest.status.unmatch'),
                 'updated_at' => date('Y-m-d', time())
             ]);
+        } else {
+            SuggestCModel::create_suggest([
+                'user_id' => $user_id,
+                'matching_id' => $matching_id,
+                'status' => config('constant.suggest.status.unmatch'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
         }
 
         return ApiHelper::success(['message' => 'success']);
@@ -755,17 +767,20 @@ class CustomerController extends Controller
                 ->get();
             $listFriendOfFriendIds = $listFriendOfFriends->pluck('id')->toArray();
 
+            $react_unmatch_ids = SuggestQModel::get_list_unmatch_by_user_id($user->id);
+            $react_unmatch_ids = array_map(function($u) {return $u->id;}, $react_unmatch_ids);
+
             $suggests = array_merge($suggests, $listFriendOfFriendIds);
             // get profile by city
-            $suggests = $this->getProfileByCity($suggests, $user, $react);
+            $suggests = $this->getProfileByCity($suggests, $user, $react, $react_unmatch_ids);
             // get profile by country
-            $suggests = $this->getProfileByCountry($suggests, $user, $react);
+            $suggests = $this->getProfileByCountry($suggests, $user, $react, $react_unmatch_ids);
 
             // get profile by birthday
-            $suggests = $this->getProfileByBirthday($suggests, $user, $react);
+            $suggests = $this->getProfileByBirthday($suggests, $user, $react, $react_unmatch_ids);
 
             // get random profile
-            $suggests = $this->getRandomProfile($suggests, $user, $react);
+            $suggests = $this->getRandomProfile($suggests, $user, $react, $react_unmatch_ids);
 
             if (!empty($suggests)) {
                 $data = [];
@@ -813,26 +828,26 @@ class CustomerController extends Controller
         $this->suggest($request);
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
-        if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
-//            // get user in field suggested
-            $reacting = json_decode($user->_suggested);
-            if (count($reacting) < 4) {
-                $reacting_id = $reacting;
+//         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
+// //            // get user in field suggested
+//             $reacting = json_decode($user->_suggested);
+//             if (count($reacting) < 4) {
+//                 $reacting_id = $reacting;
                 
-            } else {
-                $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
-            }
-            $listDiscover = json_decode($user->__discover);
-            if (!empty($listDiscover)) {
-                $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $listDiscover);
-            }
-
-
-        } else {
+//             } else {
+//                 $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
+//             }
+//             $listDiscover = json_decode($user->__discover);
+//             if (!empty($listDiscover)) {
+//                 $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $listDiscover);
+//             }
+//         } else {
             // remove old discover yesterday
             SuggestCModel::reset_discover($user_id);
             $suggestId = [];
             $react = SuggestQModel::get_react_user($user->id);
+            $react_unmatch_ids = SuggestQModel::get_list_unmatch_by_user_id($user->id);
+            $react_unmatch_ids = array_map(function($u) {return $u->id;}, $react_unmatch_ids);
             $react[] = $user_id;
             $reacting = json_decode($user->_suggested);
             if (count($reacting) < 4) {
@@ -841,21 +856,21 @@ class CustomerController extends Controller
             } else {
                 $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
             }
-            
 
             // get new discover
 //            $result = SuggestQModel::get_new_discover($user);
 
             // get profile by city
-            $suggestId = $this->getProfileByCity($suggestId, $user, $react);
+            $suggestId = $this->getProfileByCity($suggestId, $user, $react, $react_unmatch_ids);
+           
             // get profile by country
-            $suggestId = $this->getProfileByCountry($suggestId, $user, $react);
+            $suggestId = $this->getProfileByCountry($suggestId, $user, $react, $react_unmatch_ids);
 
             // get profile by birthday
-            $suggestId = $this->getProfileByBirthday($suggestId, $user, $react);
+            $suggestId = $this->getProfileByBirthday($suggestId, $user, $react, $react_unmatch_ids);
 
             // get random profile
-            $suggestId = $this->getRandomProfile($suggestId, $user, $react);
+            $suggestId = $this->getRandomProfile($suggestId, $user, $react, $react_unmatch_ids);
 
             if (!empty($suggestId)) {
                 $data = [];
@@ -882,7 +897,7 @@ class CustomerController extends Controller
                 'discover_at' => date('Y-m-d', $current_time),
                 '__discover' => json_encode($suggestId)
             ]);
-        }
+        //}
 
         $suggests = ApiHelper::clear_data_member($suggests);
 
@@ -1043,7 +1058,7 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getProfileByCity($suggestId, $profile, $react)
+    protected function getProfileByCity($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30 && $profile->city) {
             $listIdProfileInCity = CustomerQModel::select('id')
@@ -1051,6 +1066,7 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotIn('id', $react_unmatch_ids)
                 ->orderByRaw("RANDOM()")
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
@@ -1074,7 +1090,7 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getProfileByCountry($suggestId, $profile, $react)
+    protected function getProfileByCountry($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30 && $profile->country) {
             $listIdProfileInCountry = CustomerQModel::select('id')
@@ -1082,6 +1098,7 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotIn('id', $react_unmatch_ids)
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
                 $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
@@ -1103,13 +1120,14 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getProfileByBirthday($suggestId, $profile, $react)
+    protected function getProfileByBirthday($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30 && $profile->birthday) {
             $listInAgeRange = CustomerQModel::select('id')
                 ->whereRaw("EXTRACT(YEAR FROM TO_DATE(birthday, 'DD-MM-YYYY')) BETWEEN EXTRACT(YEAR FROM TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY')) - 5 AND EXTRACT(YEAR FROM TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY')) + 5")
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotIn('id', $react_unmatch_ids)
                 ->where('id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
                 ->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
@@ -1129,12 +1147,13 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getRandomProfile($suggestId, $profile, $react)
+    protected function getRandomProfile($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30) {
             $listRandomId = CustomerQModel::select('customers.id')
                 ->whereNotIn('customers.id', $react)
                 ->whereNotIn('customers.id', $suggestId)
+                ->whereNotIn('customers.id', $react_unmatch_ids)
                 ->where('customers.id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
                 ->limit(30)
@@ -1263,5 +1282,70 @@ class CustomerController extends Controller
             );
         }
 
+    }
+
+    public function direct_message(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        $dm_id = $request->input('direct_message_to_id');
+
+        if (empty($dm_id)) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.customer.remain_dm_not_enough'),
+                'direct message to user id is invalid',
+                400
+            );
+        }
+
+        // check user will direct message
+        $direct_message_user = CustomerQModel::get_user_by_id($dm_id);
+        if (!$direct_message_user) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'direct message to user id not found',
+                404
+            );
+        }
+
+        // get current
+        $user_current = CustomerQModel::get_user_by_id($user_id);
+        $user_current_dm = json_decode($user_current->__dm);
+        $user_current_dm = $user_current_dm ? $user_current_dm : [];
+        if (!empty($user_current_dm) && in_array($direct_message_user->id, $user_current_dm)) {
+            return ApiHelper::success([
+                'message' => 'success',
+                'user_id' => $direct_message_user->id,
+                'remain_direct_message' => $user_current->remain_direct_message
+            ]);
+        }
+        if ($user_current->remain_direct_message == 0) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.customer.remain_dm_not_enough'),
+                __('direct_message.remain_dm_not_enough'),
+                400
+            );
+        }
+
+        // decrease remain direct message user
+        if (empty($user_current_dm)) {
+            $user_current_dm = [$direct_message_user->id]; 
+        } else {
+            array_push($user_current_dm, $direct_message_user->id);
+        }
+
+        $remain_direct_message = $user_current->remain_direct_message - 1;
+
+        CustomerCModel::update_user($user_id, [
+            'remain_direct_message' => $remain_direct_message,
+            '__dm' => json_encode($user_current_dm)
+        ]);
+
+        return ApiHelper::success([
+            'message' => 'success',
+            'direct_message_to_id' => $direct_message_user->id,
+            'remain_direct_message' => $remain_direct_message
+        ]);
     }
 }

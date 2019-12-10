@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         //
         'App\Console\Commands\NotificationSend',
         'App\Console\Commands\CreateConversation',
+        'App\Console\Commands\ResetPointAndDirectMessage'
     ];
 
     /**
@@ -27,8 +28,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')
-        //          ->hourly();
+        //          ->everyMinute();
         $schedule->command('notification:send')->dailyAt('21:00')->timezone('Asia/Ho_Chi_Minh');
+        $schedule->command('customer:reset-point-and-remain-dm')->dailyAt('00:00')->timezone('Asia/Ho_Chi_Minh');
 //        $schedule->command('notification:send')->everyMinute();
     }
 

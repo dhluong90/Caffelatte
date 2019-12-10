@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddFieldRemainDirectMessageCustomer extends Migration
+class AddUnmatchDmIntoCustomer extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddFieldRemainDirectMessageCustomer extends Migration
     public function up()
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->integer('remain_direct_message')->default(0);
+            $table->json('_unmatch_dm')->nullable()->default(json_encode([]));
         });
     }
 
@@ -26,7 +26,7 @@ class AddFieldRemainDirectMessageCustomer extends Migration
     public function down()
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->dropColumn(['remain_direct_message']);
+            $table->dropColumn(['_unmatch_dm']);
         });
     }
 }

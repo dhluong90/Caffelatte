@@ -50,6 +50,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/upload/avatar', 'Api\CustomerController@upload_avatar');
         Route::delete('/upload/avatar', 'Api\CustomerController@delete_avatar');
         Route::post('/sendNotification', 'Api\CustomerController@send_notification');
+        Route::post('/direct_message', 'Api\CustomerController@direct_message');
     });
 });
 
@@ -63,6 +64,9 @@ $router->group(['prefix'=>'location'], function () use ($router) {
     $router->get('/city/{code}', ['as' => 'v1.location.city', 'uses' => 'Api\LocationController@getListCityByCountryCode']);
 });
 
+$router->group(['prefix'=> 'util'], function () use ($router) {
+    $router->get('/interests', 'Api\UtilController@getInterests');
+});
 
 // Route::group(['prefix' => 'tool'], function () {
 //     Route::get('/update_friend', 'Api\ToolController@update_friend');
