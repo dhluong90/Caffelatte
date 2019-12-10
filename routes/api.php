@@ -50,6 +50,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/upload/avatar', 'Api\CustomerController@upload_avatar');
         Route::delete('/upload/avatar', 'Api\CustomerController@delete_avatar');
         Route::post('/sendNotification', 'Api\CustomerController@send_notification');
+        Route::post('/sendNotification/data_payload', 'Api\CustomerController@send_notification_data_payload_only');
         Route::post('/direct_message', 'Api\CustomerController@direct_message');
     });
 });
