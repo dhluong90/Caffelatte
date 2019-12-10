@@ -27,6 +27,7 @@ Route::group(['prefix' => 'v1','middleware' => 'auth:api'], function () {
 Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', 'Api\AuthController@login');
     Route::post('/loginbyphone', 'Api\AuthController@login_by_phone');
+    Route::post('/loginbyapple', 'Api\AuthController@login_by_apple');
 });
 
 Route::group(['prefix' => 'user'], function () {
