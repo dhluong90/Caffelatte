@@ -1223,6 +1223,8 @@ class CustomerController extends Controller
      */
     public function send_notification(Request $request)
     {
+        // a notification include notification payload & data payload. type default contain both.
+        $notification_type = $request->input('notification_type', 'default');
         $message = json_decode(request()->getContent(), true);
 
         $user_send_id = $message['fromID'];
@@ -1269,77 +1271,20 @@ class CustomerController extends Controller
             'body' => $message_body,
             'sound' => true
         ];
+        $data = request()->getContent();
 
-        $result = NotificationHelper::send($fcm_token, $notification, request()->getContent());
-        if ($result) {
-            return ApiHelper::success(['message' => 'success']);
-        } else {
-            return ApiHelper::error(
-                config('constant.error_type.server_error'),
-                config('constant.error_code.common.server_error'),
-                'Fail to send notification',
-                500
-            );
+        if ($notification_type === 'data') {
+            $notification = null;
+            $data = [
+                'title' => $user_send->name,
+                'body' => $message_body,
+                'fromID' => $user_send_id,
+                'type' => 'message'
+            ];
         }
 
-    }
 
-    /**
-     * Send notification to other when give a message to them (data payload only)
-     * @param $request request json
-     * @return void
-     */
-    public function send_notification_data_payload_only(Request $request)
-    {
-        $message = json_decode(request()->getContent(), true);
-
-        $user_send_id = $message['fromID'];
-        $user_send = CustomerQModel::get_user_by_id($user_send_id);
-        $user_received_id = $message['toID'];
-        $user_received = CustomerQModel::get_user_by_id($user_received_id);
-
-        if(empty($user_send) || empty($user_received)) {
-            return ApiHelper::error(
-                config('constant.error_type.server_error'),
-                config('constant.error_code.common.server_error'),
-                'The requested user is not found',
-                500
-            );
-        }
-
-        $fcm_token = $user_received->fcm_token;
-
-        if (empty($fcm_token)) {
-            return ApiHelper::error(
-                config('constant.error_type.server_error'),
-                config('constant.error_code.common.server_error'),
-                'receiver have no fcm token',
-                500
-            );
-        }
-
-        //Decide body content based on message type
-        $message_type = $message['type'];
-        $message_body = '';
-        switch ($message_type) {
-            case 'photo':
-                $message_body = "Sent you a photo";
-                break;
-            case 'sticker':
-                $message_body = "Sent you a sticker";
-                break;
-            default:
-                $message_body = $message['content'];
-        }
-
-        $data = [
-            'title' => $user_send->name,
-            'body' => $message_body,
-            'fromID' => $user_send_id,
-            'type' => 'message'
-        ];
-        
-        $result = NotificationHelper::send($fcm_token, null, $data);
+        $result = NotificationHelper::send($fcm_token, $notification, $data);
         if ($result) {
             return ApiHelper::success(['message' => 'success']);
         } else {
