@@ -25,6 +25,19 @@ class CustomerQModel extends Model
     }
 
     /**
+     * get_user_by_apple_id
+     * @param $apple_id
+     * @return user
+     */
+    public static function get_user_by_apple_id($apple_id)
+    {
+        return DB::table('customers')
+            ->select('*')
+            ->where('apple_id', '=', $apple_id)
+            ->first();
+    }
+
+    /**
      * get_user_by_phone
      * @param $phone
      * @return user

@@ -488,6 +488,7 @@ class CustomerController extends Controller
                         'title' => 'Cafelatte',
                         'body' => $user_current->name . ' like you',
                         'user_id' => $user_current->id,
+                        'user_img' => $user_current->image,
                         'chat_id' => $user_current->chat_id,
                         'user_matching_id' => $user_matching->id,
                         'matching_chat_id' => $user_matching->chat_id,
@@ -1294,7 +1295,8 @@ class CustomerController extends Controller
             $data = [
                 'title' => $user_send->name,
                 'body' => $message_body,
-                'fromID' => $user_send_id,
+                'sender_id' => $user_send_id,
+                'sender_img' => $user_send->image,
                 'type' => 'message'
             ];
         }
