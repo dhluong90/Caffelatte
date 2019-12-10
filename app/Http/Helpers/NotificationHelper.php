@@ -6,33 +6,6 @@ use App\Http\Helpers\Constants;
 use Config;
 
 Class NotificationHelper {
-    /*
-        body
-        {
-            "to": "d0zkgaLhm18:APA91bErEF30uGmuUpefi3nYBZVuHfo_wqR-5GG_qMgPzPtoowlGY67vdfLn5ZNbFjBA-t5Z_JSClfnFcVHSUFSg8ArhiRWH8xagpJYpNoVL4Oolv1zxapwEVD36w1SSIiChsjSoZ3nV",
-            "notification": {
-                "body": "Hello",
-                "title": "This is test message."
-            },
-            "data" : {
-                 "key_1" : "Data for key_1",
-                 "key_2" : "Data for key_2"
-            }
-        }
-
-        response
-        {
-            "multicast_id": 6602502827485899322,
-            "success": 1,
-            "failure": 0,
-            "canonical_ids": 0,
-            "results": [
-                {
-                    "message_id": "0:1525247321541709%6e94ad276e94ad27"
-                }
-            ]
-        }
-    */
 
     /**
      * send
@@ -41,9 +14,19 @@ Class NotificationHelper {
      * @param data
      * @return respone
      */
-    public static function send($fcm_token, $notification, $data) {
-        // add sound default
-        $notification['sound'] = 'default';
+    public static function send($fcm_token, $notification = null, $data = null) {
+
+        $fcmBody = ['to' => $fcm_token];
+
+        if ($notification) {
+            // add sound default
+            $notification['sound'] = 'default';
+            $fcmBody['notification'] = $notification;
+        }
+
+        if ($data) {
+            $fcmBody['data'] = (object) $data;
+        }
 
         $client = new \GuzzleHttp\Client();
         try {
@@ -52,11 +35,7 @@ Class NotificationHelper {
                         'Authorization' => 'key=AAAA6l_om9s:APA91bE7S65RvR2p0GnL6MYpy4PtE4yWdPpDmBwL7KcVFtsMIvyvZf5jIkqhtrqQgfWKjTiu8VbUcDvtDeEFSLBI4SiInriwfGDxGDC2XzfYDljgjVc8chmItfDcExek-XTeVmKlNuRA',
                         'Content-Type' => 'application/json'
                     ],
-                    'body' => json_encode([
-                        'to' => $fcm_token,
-                        'notification' => $notification,
-                        'data' => (object)$data
-                    ])
+                    'body' => json_encode($fcmBody)
                 ]);
 
             if ($res->getStatusCode() == 200) {
