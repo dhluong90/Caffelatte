@@ -35,7 +35,7 @@ class SuggestQModel extends Model
             from suggests
             where ((user_id = " . $user_id . " and matching_id = " . $matching_id . ") or 
                 (user_id = " . $matching_id . " and matching_id = " . $user_id . "))
-            and status = '" . config('constant.suggest.status.approved') . "'";
+            and status = '" . config('constant.suggest.status.unmatch') . "'";
         $result = DB::select($sql);
         if ($result) {
             return $result[0];
@@ -313,7 +313,7 @@ class SuggestQModel extends Model
             ->whereIn('u.id', $listId)
             ->whereNotIn('u.id', $listReactedPrev)
             ->whereNotIn('u.id', $reactingId)
-            ->whereNotIn('s.status', [config('constant.suggest.status.suggested')])
+            ->whereNotIn('s.status', [config('constant.suggest.status.suggested'), config('constant.suggest.status.unmatch')])
             ->limit(config('constant.suggest.limit'))
             ->orderByRaw("suggested")
             ->groupBy("u.id")

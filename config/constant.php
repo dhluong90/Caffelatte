@@ -27,6 +27,8 @@ return [
 
     'customer' => [
         'count_image' => 9,
+        'remain_like' =>  env('REMAIN_LIKE', 10),
+        'remain_direct_message' => env('REMAIN_DIRECT_MESSAGE', 5)
     ],
 
     'error_type' => [
@@ -61,6 +63,7 @@ return [
             'point_limit' => 700,
             'point_not_enough' => 701,
             'image_error_format' => 702,
+            'remain_dm_not_enough' => 803
         ]
     ],
 ];
