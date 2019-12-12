@@ -442,10 +442,10 @@ class CustomerController extends Controller
                     $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                         ->push([[
                             'content' => '',
-                            'fromID' => $user_current->id,
+                            'fromID' => $user_current->id . '',
                             'seen' => false,
                             'timestamp' => time(),
-                            'toID' => $user_matching->id,
+                            'toID' => $user_matching->id . '',
                             'type' => 'init'
                         ]])->getKey();
                 }
@@ -1147,7 +1147,7 @@ class CustomerController extends Controller
                 ->whereNotIn('id', $react_unmatch_ids)
                 ->where('id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
-                ->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
+                //->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listInAgeRange) {
