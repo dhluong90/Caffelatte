@@ -25,13 +25,8 @@ class Kernel extends ConsoleKernel
      * @param  \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
-    protected function schedule(Schedule $schedule)
-    {
-        // $schedule->command('inspire')
-        //          ->everyMinute();
-        $schedule->command('notification:send')->dailyAt('21:00')->timezone('Asia/Ho_Chi_Minh');
+    protected function schedule(Schedule $schedule) {
         $schedule->command('customer:reset-point-and-remain-dm')->dailyAt('00:00')->timezone('Asia/Ho_Chi_Minh');
-//        $schedule->command('notification:send')->everyMinute();
     }
 
     /**

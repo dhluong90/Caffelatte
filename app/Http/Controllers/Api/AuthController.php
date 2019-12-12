@@ -101,7 +101,8 @@ class AuthController extends Controller
                     'firebase_uid' => $uid,
                     'login_at' => date('Y-m-d H:i:s'),
                     'created_at' => date('Y-m-d H:i:s'),
-                    'point' => 50
+                    'point' => config('constant.customer.remain_like'),
+                    'remain_direct_message' => config('constant.customer.remain_direct_message')
                 ];
 
                 $user_id = CustomerCModel::create_user($data);
@@ -237,7 +238,8 @@ class AuthController extends Controller
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
                     'created_at' => date('Y-m-d H:i:s'),
-                    'point' => 50
+                    'point' => config('constant.customer.remain_like'),
+                    'remain_direct_message' => config('constant.customer.remain_direct_message')
                 ];
 
 
