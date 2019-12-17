@@ -442,10 +442,10 @@ class CustomerController extends Controller
                     $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                         ->push([[
                             'content' => '',
-                            'fromID' => $user_current->id . '',
+                            'fromID' => (string) $user_current->id,
                             'seen' => false,
                             'timestamp' => time(),
-                            'toID' => $user_matching->id . '',
+                            'toID' => (string) $user_matching->id,
                             'type' => 'init'
                         ]])->getKey();
                 }
@@ -469,32 +469,19 @@ class CustomerController extends Controller
 
             // todo realtime
             if ($user_current->fcm_token) {
-                // a notification include notification payload & data payload. type default contain both.
-                $notification_type = $request->input('notification_type', 'default');
                 $notification = [
-                    'title' => 'Cafelatte',
-                    'body' => $user_current->name . ' like you'
+                    'title' => 'Cafe & Latte',
+                    'body' => $user_current->name . ' like you',
+                    'click_action' => 'chat'
                 ];
                 $data = [
                     'user_id' => $user_current->id,
-                    'chat_id' => $user_current->chat_id,
+                    'user_name' => $user_current->name,
+                    'user_img' => $user_current->image,
                     'user_matching_id' => $user_matching->id,
-                    'matching_chat_id' => $user_matching->chat_id,
                     'type' => 'like'
                 ];
-                if ($notification_type === 'data') {
-                    $notification = null;
-                    $data = [
-                        'title' => 'Cafelatte',
-                        'body' => $user_current->name . ' like you',
-                        'user_id' => $user_current->id,
-                        'user_img' => $user_current->image,
-                        'chat_id' => $user_current->chat_id,
-                        'user_matching_id' => $user_matching->id,
-                        'matching_chat_id' => $user_matching->chat_id,
-                        'type' => 'like'
-                    ];
-                }
+                error_log("[Notification] like:");
                 $result = NotificationHelper::send($user_matching->fcm_token, $notification, $data);
             }
 
@@ -1240,14 +1227,13 @@ class CustomerController extends Controller
      */
     public function send_notification(Request $request)
     {
-        // a notification include notification payload & data payload. type default contain both.
-        $notification_type = $request->input('notification_type', 'default');
+        error_log("Sending notification..");
         $message = json_decode(request()->getContent(), true);
-
         $user_send_id = $message['fromID'];
         $user_send = CustomerQModel::get_user_by_id($user_send_id);
         $user_received_id = $message['toID'];
         $user_received = CustomerQModel::get_user_by_id($user_received_id);
+        error_log("From " . $user_send_id . " to " . $user_received_id);
 
         if(empty($user_send) || empty($user_received)) {
             return ApiHelper::error(
@@ -1286,22 +1272,12 @@ class CustomerController extends Controller
         $notification = [
             'title' => $user_send->name,
             'body' => $message_body,
-            'sound' => true
+            'click_action' => 'chat'
         ];
-        $data = request()->getContent();
-
-        if ($notification_type === 'data') {
-            $notification = null;
-            $data = [
-                'title' => $user_send->name,
-                'body' => $message_body,
-                'sender_id' => $user_send_id,
-                'sender_img' => $user_send->image,
-                'type' => 'message'
-            ];
-        }
-
-
+        $data = json_decode(request()->getContent(), true);
+        $data['user_img'] = $user_send->image;
+        $data['user_name'] = $user_send->name;
+        error_log("[Notification] chat:");
         $result = NotificationHelper::send($fcm_token, $notification, $data);
         if ($result) {
             return ApiHelper::success(['message' => 'success']);

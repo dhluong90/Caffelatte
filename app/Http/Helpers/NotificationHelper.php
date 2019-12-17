@@ -25,7 +25,7 @@ Class NotificationHelper {
         }
 
         if ($data) {
-            $fcmBody['data'] = (object) $data;
+            $fcmBody['data'] = $data;
         }
 
         $client = new \GuzzleHttp\Client();
@@ -39,12 +39,16 @@ Class NotificationHelper {
                 ]);
 
             if ($res->getStatusCode() == 200) {
+                error_log(json_encode($fcmBody));
+                error_log(json_encode($res));
                 $data = json_decode($res->getBody()->getContents());
                 if ($data->success == 1) {
                     return true;
                 }
             }
         } catch(\Exception $e) {
+            error_log(json_encode($fcmBody));
+            error_log($e);
             return false;
         }
 
