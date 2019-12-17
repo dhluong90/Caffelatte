@@ -50,27 +50,29 @@ class NotificationSend extends Command
 
     public function send_notification_everyday()
     {
+
         $list_customer_vi = CustomerQModel::get_users_fcm_token_with_language_and_country('vi_vn');
+        $listGetViMessage = $list_customer_vi->pluck('fcm_token')->unique();
+
         $list_customer = CustomerQModel::get_users_fcm_token_with_language_and_country('');
-        $listGetEnMessage = $list_customer->pluck('fcm_token');
-        $listGetViMessage = $list_customer_vi->pluck('fcm_token');
+        $listGetEnMessage = $list_customer->pluck('fcm_token')->unique();
+        $listGetEnMessage = $listGetEnMessage->diff($listGetViMessage);
 
         $message = $this->get_notification_message();
         $notification = [
-//            'title' => 'Tin nhắn hàng ngày',
+            'title' => 'Daily news',
             'body' => $message->content_en,
             'sound' => true
         ];
 
         $notification_vi = [
-//            'title' => 'Tin nhắn hàng ngày',
+            'title' => 'Tin nhắn hàng ngày',
             'body' => $message->content,
             'sound' => true
         ];
 
         $fcmNotification = [
-            'registration_ids' => $listGetEnMessage, //multple token array
-//            'to'        => $token, //single token
+            'registration_ids' => $listGetEnMessage,
             'notification' => $notification,
         ];
 
@@ -88,13 +90,20 @@ class NotificationSend extends Command
 
 
         if ($listGetEnMessage) {
-            $result = curl_exec($ch);
+            $i = 0;
+            // Need to be splitted since FCM only allow maximum 1000 target tokens per request
+            while($i < $listGetEnMessage->count()) {
+                $fcmNotification['registration_ids'] = $listGetEnMessage->slice($i, 1000)->values()->all();
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
+                $result = curl_exec($ch);
+                error_log("[Notification] daily:");
+                error_log(json_encode($fcmNotification));
+                error_log(json_encode($result));
+                $i = $i + 1000;
+            }
             curl_close($ch);
         }
-
-
         if ($listGetViMessage) {
-            $fcmNotification['registration_ids'] = $listGetViMessage;
             $fcmNotification['notification'] = $notification_vi;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $this->fcmUrl);
@@ -102,16 +111,20 @@ class NotificationSend extends Command
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
-            $result = curl_exec($ch);
+
+            $i = 0;
+            // Need to be splitted since FCM only allow maximum 1000 target tokens per request
+            while($i < $listGetViMessage->count()) {
+                $fcmNotification['registration_ids'] = $listGetViMessage->slice($i, 1000)->values()->all();
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
+                $result = curl_exec($ch);
+                error_log("[Notification] daily:");
+                error_log(json_encode($fcmNotification));
+                error_log(json_encode($result));
+                $i = $i + 1000;
+            }
             curl_close($ch);
         }
-
-
-//        $customer_fcm_tokens = array_column($customers, 'fcm_token');
-//        foreach ($customers as $customer) {
-//            dd($customer);
-//        }
 
         return true;
     }

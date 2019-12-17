@@ -15,6 +15,7 @@
         "guzzlehttp/guzzle": "^6.3",
         "iivannov/branchio": "^1.1",
         "intervention/image": "^2.3",
+        "kreait/firebase-php": "^4.29",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
         "league/flysystem-aws-s3-v3": "^1.0",

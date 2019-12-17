@@ -35,7 +35,7 @@ class SuggestQModel extends Model
             from suggests
             where ((user_id = " . $user_id . " and matching_id = " . $matching_id . ") or 
                 (user_id = " . $matching_id . " and matching_id = " . $user_id . "))
-            and status = '" . config('constant.suggest.status.approved') . "'";
+            and status = '" . config('constant.suggest.status.unmatch') . "'";
         $result = DB::select($sql);
         if ($result) {
             return $result[0];
@@ -145,15 +145,11 @@ class SuggestQModel extends Model
      */
     public static function get_users_like_me($user_id, $limit = null, $user)
     {
-        $selectWeightPoint = '(
-                        
-                        (CASE WHEN u.city = "' . $user->city . '" THEN 3 ELSE 0 END)';
+        $selectWeightPoint = "((CASE WHEN u.city = '" . $user->city . "' THEN 3 ELSE 0 END)";
         if ($user->birthday) {
-            $selectWeightPoint .= '  + 
-                        (CASE WHEN YEAR(STR_TO_DATE(u.birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
+            $selectWeightPoint .= "  + (CASE WHEN EXTRACT(YEAR FROM TO_DATE(u.birthday, 'DD-MM-YYYY')) BETWEEN EXTRACT(YEAR FROM TO_DATE('" . $user->birthday . "', 'DD-MM-YYYY')) - 5 AND EXTRACT(YEAR FROM TO_DATE('" . $user->birthday . "', 'DD-MM-YYYY')) + 5 THEN 2 ELSE 0 END) ";
         }
-        $selectWeightPoint .= '+ (CASE WHEN u.country = "' . $user->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
-
+        $selectWeightPoint .= "+ (CASE WHEN u.country = '" . $user->country . "' THEN 1 ELSE 0 END)) as weightPoint";
         $query = DB::table('customers as u')
             ->select('u.*', 's.status')
             ->selectRaw($selectWeightPoint)
@@ -161,12 +157,24 @@ class SuggestQModel extends Model
             ->where('s.matching_id', '=', $user_id)
             ->where('u.gender', '<>', $user->gender)
             ->where('s.status', '=', config('constant.suggest.status.liked'))
-            ->orderBy('s.updated_at', 'ASC')
-            ->orderBy('weightPoint', 'DESC');
+            ->orderByRaw('"s"."updated_at" ASC')
+            ->orderByRaw('weightPoint DESC');
         if ($limit) {
             $query->limit($limit);
         }
 
+        return $query->get();
+    }
+
+    public static function get_who_like_me($user_id)
+    {
+        $query = DB::table('customers as u')
+            ->select('u.*')
+            ->join('suggests as s', 's.user_id', '=', 'u.id')
+            ->select('s.*')
+            ->where('s.status', '=', 2)
+            ->where('s.matching_id', '=', $user_id)
+            ->orderBy('s.updated_at', 'ASC');
         return $query->get();
     }
 
@@ -178,7 +186,6 @@ class SuggestQModel extends Model
      */
     public static function get_current_suggest($limit, $list_suggest, $user_id)
     {
-        $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), 7];
         $str_reacted_status = implode(',', $array_reacted);
         $array_status_not_get = [ config('constant.suggest.status.discover')];
@@ -186,18 +193,17 @@ class SuggestQModel extends Model
         if ($list_suggest) {
             $list_suggest_text = implode(',', $list_suggest);
         }
-
         return DB::table('customers as u')
-            ->select('u.*')->selectRaw('CASE WHEN s.status IN (2,3,4,7) THEN TRUE ELSE FALSE END as reacted')
-            ->join('suggests as s', 's.matching_id', '=', 'u.id')
-            ->where('s.user_id', '=', $user_id)
-            ->whereIn('u.id', $list_suggest)
-            ->whereNotIn('s.status', $array_status_not_get)
-            ->where('s.created_at', $today)
-            ->orderByRaw("FIELD(u.id, " . $list_suggest_text . ")")
-            ->limit($limit)
-            ->distinct()
-            ->get();
+                ->select('u.*')->selectRaw("CASE WHEN s.status IN (2,3,4,7) THEN 1 ELSE 0 END as reacted, array_position('{" . $list_suggest_text . "}', u.id) as suggested")
+                ->join('suggests as s', 's.matching_id', '=', 'u.id')
+                ->where('s.user_id', '=', $user_id)
+                ->whereIn('u.id', $list_suggest)
+                ->whereNotIn('s.status', $array_status_not_get)
+                ->orderByRaw("suggested")
+                ->limit($limit)
+                ->groupBy("u.id")
+                ->groupBy("s.status")
+                ->get();
     }
 
     /**
@@ -296,23 +302,23 @@ class SuggestQModel extends Model
     public static function get_current_discover($user_id, $reactingId ,$listId)
     {
         $strMatchingId = implode(',', $listId);
-        $today = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d');
         $array_reacted = [config('constant.suggest.status.passed'), config('constant.suggest.status.approved'), config('constant.suggest.status.liked'), 7];
         $listReactedPrev = SuggestQModel::get_react_user($user_id);
         $listNotGet[] = $user_id;
         // get user like me in $suggest_list
         $list = DB::table('customers as u')
-            ->select('u.*', 's.status', 's.created_at as s_created_at')->selectRaw('CASE WHEN 0 = 0 THEN FALSE END as reacted')
+            ->select('u.*', 's.status', 's.created_at as s_created_at')->selectRaw("CASE WHEN 0 = 0 THEN FALSE END as reacted, array_position('{" . $strMatchingId . "}', u.id) as suggested")
             ->join('suggests as s', 's.matching_id', '=', 'u.id')
             ->where('s.user_id', '=', $user_id)
             ->whereIn('u.id', $listId)
             ->whereNotIn('u.id', $listReactedPrev)
             ->whereNotIn('u.id', $reactingId)
-            ->whereNotIn('s.status', [config('constant.suggest.status.suggested')])
-            ->where('s.created_at', $today)
+            ->whereNotIn('s.status', [config('constant.suggest.status.suggested'), config('constant.suggest.status.unmatch')])
             ->limit(config('constant.suggest.limit'))
-            ->orderByRaw("FIELD(u.id, " . $strMatchingId . ")")
-            ->distinct()
+            ->orderByRaw("suggested")
+            ->groupBy("u.id")
+            ->groupBy("s.status")
+            ->groupBy("s_created_at")
             ->get();
         foreach ($list as $k => $item) {
             if (in_array($item->id, $array_reacted) ) {
@@ -342,7 +348,7 @@ class SuggestQModel extends Model
             })
             ->where('country', '=', $user->country)
             ->whereNotIn('id', $user_matching_ids)
-            ->orderBy(DB::raw('RAND()'))
+            ->orderBy(DB::raw('RANDOM()'))
             ->limit(config('constant.suggest.limit'))
             ->get();
 

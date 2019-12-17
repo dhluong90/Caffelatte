@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Helpers\FirebaseDatabaseHelper;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
@@ -22,6 +23,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use \Firebase\JWT\JWT;
 use Yish\Imgur\Facades\Upload as Imgur;
+use Iivannov\Branchio\Support\UrlType;
+use Iivannov\Branchio\Integration\Laravel\Facade\Branchio;
+use Iivannov\Branchio\Link;
 
 
 /**
@@ -87,7 +91,155 @@ class CustomerController extends Controller
         return ApiHelper::success($user);
     }
 
+    /**
+     * @param Request $request
+     * @param $id
+     * @return \App\Http\Helpers\json
+     */
+    public function profile_by_ids(Request $request, $ids)
+    {
+        $listId = explode(",", $ids);
+        $user = CustomerQModel::get_users_by_ids($listId);
+        if (!$user) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'chat id not found',
+                404
+            );
+        }
+
+        $user = ApiHelper::clear_data_member($user);
+
+        return ApiHelper::success($user);
+    }
+
     public function update(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        $data = [];
+        if ($request->input('gender') || $request->input('gender') === 0) {
+            $data['gender'] = $request->input('gender');
+        }
+
+        if ($request->input('chat_id')) {
+            $data['chat_id'] = $request->input('chat_id');
+        }
+
+        if ($request->input('country')) {
+            $data['country'] = $request->input('country');
+        }
+
+        if ($request->input('city')) {
+            $data['city'] = $request->input('city');
+        }
+
+        if ($request->input('language')) {
+            $data['language'] = $request->input('language');
+        }
+
+        if ($request->input('education')) {
+            $data['education'] = $request->input('education');
+        }
+
+        if ($request->input('occupation')) {
+            $data['occupation'] = $request->input('occupation');
+        }
+
+        if ($request->input('sumary')) {
+            $data['sumary'] = $request->input('sumary');
+        }
+
+        if ($request->input('information')) {
+            $data['information'] = $request->input('information');
+        }
+
+        if ($request->input('religion')) {
+            $data['religion'] = $request->input('religion');
+        }
+
+        if ($request->input('fcm_token')) {
+            $data['fcm_token'] = $request->input('fcm_token');
+        }
+
+        if ($request->input('birthday')) {
+            $data['birthday'] = $request->input('birthday');
+        }
+
+        if ($request->input('school')) {
+            $data['school'] = $request->input('school');
+        }
+
+        if ($request->input('degree')) {
+            $data['degree'] = $request->input('degree');
+        }
+
+        if ($request->input('employer')) {
+            $data['employer'] = $request->input('employer');
+        }
+
+        if ($request->input('ethnicity')) {
+            $data['ethnicity'] = $request->input('ethnicity');
+        }
+
+        if ($request->input('name')) {
+            $data['name'] = $request->input('name');
+        }
+
+        if ($request->input('phone')) {
+            $data['phone'] = $request->input('phone');
+        }
+        if ($request->input('email')) {
+            $data['email'] = $request->input('email');
+        }
+        if ($request->input('_interests') && is_array($request->input('_interests'))) {
+            $data['_interests'] = json_encode($request->input('_interests'));
+        }
+
+        if ($request->input('height')) {
+            $data['height'] = intval($request->input('height'));
+            if ($data['height'] < 0) {
+                return ApiHelper::error(
+                    config('constant.error_type.bad_request'),
+                    config('constant.error_code.auth.param_wrong'),
+                    'param height wrong',
+                    400
+                );
+            }
+        }
+        $validation = Validator::make($data, $this->ruleUpdateUser);
+        if ($validation->fails()) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                $validation->errors()->first(),
+                400
+            );
+        }
+
+        if (!is_numeric($data) && empty($data)) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
+
+        try {
+            $user = CustomerCModel::update_user($user_id, $data);
+        } catch (\Exception $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+
+        return ApiHelper::success(['message' => 'success']);
+    }
+
+    public function updateV2(Request $request)
     {
         $user_id = $request->input('user_id');
         $data = [];
@@ -187,7 +339,7 @@ class CustomerController extends Controller
             );
         }
 
-        if (empty($data)) {
+        if (!is_numeric($data) && empty($data)) {
             return ApiHelper::error(
                 config('constant.error_type.bad_request'),
                 config('constant.error_code.auth.param_wrong'),
@@ -195,9 +347,9 @@ class CustomerController extends Controller
                 400
             );
         }
-
+        
         try {
-            $user = CustomerCModel::update_user($user_id, $data);
+            CustomerCModel::update_user($user_id, $data);
         } catch (\Exception $e) {
             return ApiHelper::error(
                 config('constant.error_type.server_error'),
@@ -207,7 +359,27 @@ class CustomerController extends Controller
             );
         }
 
-        return ApiHelper::success(['message' => 'success']);
+        $user = CustomerQModel::get_user_by_id($user_id);
+        try {
+            if ($user && !$user->share_link && $user->name) {
+                $share_link = $this->generate_branch_io_link($user->id, $user->name);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+                CustomerCModel::update_user($user_id, $data_update);
+                $user = CustomerQModel::get_user_by_id($user_id);
+            }
+        } catch (\Exception $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+
+        return ApiHelper::success($user);
     }
 
     public function like(Request $request)
@@ -244,6 +416,48 @@ class CustomerController extends Controller
                 'updated_at' => date('Y-m-d', time())
             ]);
 
+            $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                ->getValue();
+            $found = false;
+            foreach($value as $item) {
+                if(count($item) > 0 ) {
+                    $fromId = $item[key($item)]['fromID'];
+                    $toId = $item[key($item)]['toID'];
+                    if (($fromId == $user_current->id && $toId == $user_matching->id) ||
+                        ($toId == $user_current->id && $fromId == $user_matching->id)
+                    ) {
+                        $found = true;
+                    }
+                }
+                break;
+            }
+            if (!$found) {
+                // Check if those users chatted before
+                $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_current->id.'/Conversations')
+                    ->getChild($user_matching->id.'/location')->getValue();
+
+                // If not, init new conversation between them
+                if(empty($conversationID)) {
+                    $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
+                        ->push([[
+                            'content' => '',
+                            'fromID' => (string) $user_current->id,
+                            'seen' => false,
+                            'timestamp' => time(),
+                            'toID' => (string) $user_matching->id,
+                            'type' => 'init'
+                        ]])->getKey();
+                }
+
+                FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_current->id.'/Conversations')->update([
+                        $user_matching->id => ['location' => $conversationID, 'isDisabled' => false]]);
+                FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                    ->getChild($user_matching->id.'/Conversations')->update([
+                        $user_current->id => ['location' => $conversationID, 'isDisabled' => false]]);
+            }
+
             // delete suggest if exist record
             $suggested_item = SuggestQModel::get_record_by_status($user_id, $matching_id, config('constant.suggest.status.suggested'));
             if ($suggested_item) {
@@ -255,17 +469,23 @@ class CustomerController extends Controller
 
             // todo realtime
             if ($user_current->fcm_token) {
-                $result = NotificationHelper::send($user_matching->fcm_token, [
-                    'title' => 'Cafelatte',
-                    'body' => $user_current->name . ' like you'
-                ], [
-                    'chat_id' => $user_current->chat_id,
-                    'matching_chat_id' => $user_matching->chat_id,
+                $notification = [
+                    'title' => 'Cafe & Latte',
+                    'body' => $user_current->name . ' like you',
+                    'click_action' => 'chat'
+                ];
+                $data = [
+                    'user_id' => $user_current->id,
+                    'user_name' => $user_current->name,
+                    'user_img' => $user_current->image,
+                    'user_matching_id' => $user_matching->id,
                     'type' => 'like'
-                ]);
+                ];
+                error_log("[Notification] like:");
+                $result = NotificationHelper::send($user_matching->fcm_token, $notification, $data);
             }
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => $user_matching->chat_id]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => $user_matching->id, 'remain_like' => $user_current->point]);
         }
 
         // case 2: user matching have suggested for current user
@@ -280,7 +500,7 @@ class CustomerController extends Controller
             }
 
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null, 'remain_like' => $user_current->point]);
         }
 
         // case 3: user matching is discover by current user
@@ -291,7 +511,7 @@ class CustomerController extends Controller
                 return ApiHelper::error(
                     config('constant.error_type.bad_request'),
                     config('constant.error_code.customer.point_not_enough'),
-                    'user not enough point',
+                    __('like.point_not_enough'),
                     400
                 );
             }
@@ -306,7 +526,7 @@ class CustomerController extends Controller
                 'point' => $user_current->point - 1
             ]);
 
-            return ApiHelper::success(['message' => 'success', 'chat_id' => null]);
+            return ApiHelper::success(['message' => 'success', 'user_id' => null, 'remain_like' => $user_current->point - 1]);
         }
 
         return ApiHelper::error(
@@ -395,20 +615,46 @@ class CustomerController extends Controller
             );
         }
 
-        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
-
-        if (!$item) {
-            return ApiHelper::error(
-                config('constant.error_type.not_found'), 404,
-                'user matching can not unmatch',
-                404
-            );
+        $value = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')->getValue();
+        $found = false;
+        foreach($value as $item) {
+            if(count($item) > 0 ) {
+                $fromId = $item[key($item)]['fromID'];
+                $toId = $item[key($item)]['toID'];
+                if (($fromId == $user_id && $toId == $user_matching->id) ||
+                    ($toId == $user_id && $fromId == $user_matching->id)
+                ) {
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if ($found) {
+            // When unmatch, two user will disabled each other
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_id.'/Conversations')
+                ->getChild($user_matching->id.'/isDisabled')
+                ->set(true);
+            FirebaseDatabaseHelper::get_firebase_connection()->getReference('Users')
+                ->getChild($user_matching->id.'/Conversations')
+                ->getChild($user_id.'/isDisabled')
+                ->set(true);
         }
 
-        SuggestCModel::update_suggest($item->id, [
-            'status' => config('constant.suggest.status.unmatch'),
-            'updated_at' => date('Y-m-d', time())
-        ]);
+        $item = SuggestQModel::get_unmatch_by_user_id($user_id, $matching_id);
+        if ($item) {
+            SuggestCModel::update_suggest($item->id, [
+                'status' => config('constant.suggest.status.unmatch'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+        } else {
+            SuggestCModel::create_suggest([
+                'user_id' => $user_id,
+                'matching_id' => $matching_id,
+                'status' => config('constant.suggest.status.unmatch'),
+                'updated_at' => date('Y-m-d', time())
+            ]);
+        }
 
         return ApiHelper::success(['message' => 'success']);
     }
@@ -441,6 +687,25 @@ class CustomerController extends Controller
         $list = ApiHelper::clear_data_member($list);
 
         return ApiHelper::success($list);
+    }
+
+    public function list_who_likes_me(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        //print_r($user_id );
+        $list = SuggestQModel::get_who_like_me($user_id);
+        //print_r($list);
+        $result = [];
+
+        foreach ($list as $item) {
+            $user = CustomerQModel::get_user_by_id($item->user_id);
+            array_push($result, $user);
+        }
+        if (!$result) {
+            return ApiHelper::success([]);
+        }
+
+        return ApiHelper::success($result);
     }
 
     public function suggest(Request $request)
@@ -477,7 +742,7 @@ class CustomerController extends Controller
             if (!$txtFriends) {
                 $txtFriends = '0';
             }
-            $listFriend = CustomerCModel::whereRaw('facebook_id IN (' . $txtFriends . ')')->get();
+            $listFriend = CustomerCModel::whereRaw("facebook_id IN ('" . $txtFriends . "')")->get();
             $friend_ids = $listFriend->pluck('id')->toArray();
 
             $friend_of_friends = $listFriend->pluck('_friend');
@@ -491,16 +756,13 @@ class CustomerController extends Controller
             if (!$friend_of_friend_merge_text) {
                 $friend_of_friend_merge_text = '0';
             }
-            $selectWeightPoint = '(
-                        
-                        (CASE WHEN city = "' . $user->city . '" THEN 3 ELSE 0 END)';
+            $selectWeightPoint = "((CASE WHEN city = '" . $user->city . "' THEN 3 ELSE 0 END)";
             if ($user->birthday) {
-                $selectWeightPoint .= '  + 
-                        (CASE WHEN YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $user->birthday . '", "%d-%m-%Y")) + 5 THEN 2 ELSE 0 END) ';
+                $selectWeightPoint .= "  + (CASE WHEN EXTRACT(YEAR FROM TO_DATE(birthday, 'DD-MM-YYYY')) BETWEEN EXTRACT(YEAR FROM TO_DATE('" . $user->birthday . "', 'DD-MM-YYYY')) - 5 AND EXTRACT(YEAR FROM TO_DATE('" . $user->birthday . "', 'DD-MM-YYYY')) + 5 THEN 2 ELSE 0 END) ";
             }
-            $selectWeightPoint .= '+ (CASE WHEN country = "' . $user->country . '" THEN 1 ELSE 0 END) ) as weightPoint ';
+            $selectWeightPoint .= "+ (CASE WHEN country = '" . $user->country . "' THEN 1 ELSE 0 END)) as weightPoint";
 
-            $listFriendOfFriends = CustomerCModel::select('*')->selectRaw($selectWeightPoint)->whereRaw('facebook_id IN (' . $friend_of_friend_merge_text . ')')
+            $listFriendOfFriends = CustomerCModel::select('*')->selectRaw($selectWeightPoint)->whereRaw("facebook_id IN ('" . $friend_of_friend_merge_text . "')")
                 ->whereNotIn('id', $friend_ids)
                 ->whereNotIn('id', $suggests)
                 ->whereNotIn('id', $react)
@@ -509,17 +771,20 @@ class CustomerController extends Controller
                 ->get();
             $listFriendOfFriendIds = $listFriendOfFriends->pluck('id')->toArray();
 
+            $react_unmatch_ids = SuggestQModel::get_list_unmatch_by_user_id($user->id);
+            $react_unmatch_ids = array_map(function($u) {return $u->id;}, $react_unmatch_ids);
+
             $suggests = array_merge($suggests, $listFriendOfFriendIds);
             // get profile by city
-            $suggests = $this->getProfileByCity($suggests, $user, $react);
+            $suggests = $this->getProfileByCity($suggests, $user, $react, $react_unmatch_ids);
             // get profile by country
-            $suggests = $this->getProfileByCountry($suggests, $user, $react);
+            $suggests = $this->getProfileByCountry($suggests, $user, $react, $react_unmatch_ids);
 
             // get profile by birthday
-            $suggests = $this->getProfileByBirthday($suggests, $user, $react);
+            $suggests = $this->getProfileByBirthday($suggests, $user, $react, $react_unmatch_ids);
 
             // get random profile
-            $suggests = $this->getRandomProfile($suggests, $user, $react);
+            $suggests = $this->getRandomProfile($suggests, $user, $react, $react_unmatch_ids);
 
             if (!empty($suggests)) {
                 $data = [];
@@ -567,26 +832,26 @@ class CustomerController extends Controller
         $this->suggest($request);
         $user_id = $request->input('user_id');
         $user = CustomerQModel::get_user_by_id($user_id);
-        if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
-//            // get user in field suggested
-            $reacting = json_decode($user->_suggested);
-            if (count($reacting) < 4) {
-                $reacting_id = $reacting;
+//         if (!empty($user->discover_at) && $user->discover_at == date('Y-m-d', $current_time)) {
+// //            // get user in field suggested
+//             $reacting = json_decode($user->_suggested);
+//             if (count($reacting) < 4) {
+//                 $reacting_id = $reacting;
                 
-            } else {
-                $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
-            }
-            $listDiscover = json_decode($user->__discover);
-            if (!empty($listDiscover)) {
-                $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $listDiscover);
-            }
-
-
-        } else {
+//             } else {
+//                 $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
+//             }
+//             $listDiscover = json_decode($user->__discover);
+//             if (!empty($listDiscover)) {
+//                 $suggests = SuggestQModel::get_current_discover($user_id, $reacting_id, $listDiscover);
+//             }
+//         } else {
             // remove old discover yesterday
             SuggestCModel::reset_discover($user_id);
             $suggestId = [];
             $react = SuggestQModel::get_react_user($user->id);
+            $react_unmatch_ids = SuggestQModel::get_list_unmatch_by_user_id($user->id);
+            $react_unmatch_ids = array_map(function($u) {return $u->id;}, $react_unmatch_ids);
             $react[] = $user_id;
             $reacting = json_decode($user->_suggested);
             if (count($reacting) < 4) {
@@ -595,21 +860,21 @@ class CustomerController extends Controller
             } else {
                 $reacting_id = [$reacting[0], $reacting[1], $reacting[2]];
             }
-            
 
             // get new discover
 //            $result = SuggestQModel::get_new_discover($user);
 
             // get profile by city
-            $suggestId = $this->getProfileByCity($suggestId, $user, $react);
+            $suggestId = $this->getProfileByCity($suggestId, $user, $react, $react_unmatch_ids);
+           
             // get profile by country
-            $suggestId = $this->getProfileByCountry($suggestId, $user, $react);
+            $suggestId = $this->getProfileByCountry($suggestId, $user, $react, $react_unmatch_ids);
 
             // get profile by birthday
-            $suggestId = $this->getProfileByBirthday($suggestId, $user, $react);
+            $suggestId = $this->getProfileByBirthday($suggestId, $user, $react, $react_unmatch_ids);
 
             // get random profile
-            $suggestId = $this->getRandomProfile($suggestId, $user, $react);
+            $suggestId = $this->getRandomProfile($suggestId, $user, $react, $react_unmatch_ids);
 
             if (!empty($suggestId)) {
                 $data = [];
@@ -636,7 +901,7 @@ class CustomerController extends Controller
                 'discover_at' => date('Y-m-d', $current_time),
                 '__discover' => json_encode($suggestId)
             ]);
-        }
+        //}
 
         $suggests = ApiHelper::clear_data_member($suggests);
 
@@ -686,7 +951,7 @@ class CustomerController extends Controller
         if ($user->point_at != date('Y-m-d', $current_time)) {
             // new date, reset old_point
             CustomerCModel::update_user($user_id, [
-                'point' => $user->point + 1,
+                'point' => $user->point + 2,
                 'old_point' => 1,
                 'point_at' => date('Y-m-d', $current_time)
             ]);
@@ -694,8 +959,10 @@ class CustomerController extends Controller
             return ApiHelper::success(['message' => 'success add point new date']);
         } else {
             if ($user->old_point < 3) {
+                //Increase 2 points
+                //Old point as a counter just increase 1
                 CustomerCModel::update_user($user_id, [
-                    'point' => $user->point + 1,
+                    'point' => $user->point + 2,
                     'old_point' => $user->old_point + 1
                 ]);
 
@@ -795,7 +1062,7 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getProfileByCity($suggestId, $profile, $react)
+    protected function getProfileByCity($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30 && $profile->city) {
             $listIdProfileInCity = CustomerQModel::select('id')
@@ -803,10 +1070,11 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
-                ->orderByRaw("RAND()")
+                ->whereNotIn('id', $react_unmatch_ids)
+                ->orderByRaw("RANDOM()")
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
-                $listIdProfileInCity = $listIdProfileInCity->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+                $listIdProfileInCity = $listIdProfileInCity->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
             }
             $listIdProfileInCity = $listIdProfileInCity
                 ->limit(30)
@@ -826,7 +1094,7 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getProfileByCountry($suggestId, $profile, $react)
+    protected function getProfileByCountry($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30 && $profile->country) {
             $listIdProfileInCountry = CustomerQModel::select('id')
@@ -834,9 +1102,10 @@ class CustomerController extends Controller
                 ->where('id', '<>', $profile->id)
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotIn('id', $react_unmatch_ids)
                 ->where('gender', '<>', $profile->gender);
             if ($profile->birthday) {
-                $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC');
+                $listIdProfileInCountry = $listIdProfileInCountry->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC");
             }
 
             $listIdProfileInCountry = $listIdProfileInCountry->limit(30)
@@ -855,16 +1124,17 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getProfileByBirthday($suggestId, $profile, $react)
+    protected function getProfileByBirthday($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30 && $profile->birthday) {
             $listInAgeRange = CustomerQModel::select('id')
-                ->whereRaw('YEAR(STR_TO_DATE(birthday, "%d-%m-%Y")) BETWEEN YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) - 5 AND YEAR(STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")) + 5 ')
+                ->whereRaw("EXTRACT(YEAR FROM TO_DATE(birthday, 'DD-MM-YYYY')) BETWEEN EXTRACT(YEAR FROM TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY')) - 5 AND EXTRACT(YEAR FROM TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY')) + 5")
                 ->whereNotIn('id', $react)
                 ->whereNotIn('id', $suggestId)
+                ->whereNotIn('id', $react_unmatch_ids)
                 ->where('id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
-                ->orderByRaw('ABS((DATEDIFF(STR_TO_DATE(birthday, "%d-%m-%Y"), STR_TO_DATE("' . $profile->birthday . '", "%d-%m-%Y")))) ASC')
+                //->orderByRaw("ABS((TO_DATE(birthday, 'DD-MM-YYYY') - TO_DATE('" . $profile->birthday . "', 'DD-MM-YYYY'))) ASC")
                 ->limit(30)
                 ->get()->pluck('id');
             if ($listInAgeRange) {
@@ -881,12 +1151,13 @@ class CustomerController extends Controller
      * @param $user
      * @return array
      */
-    protected function getRandomProfile($suggestId, $profile, $react)
+    protected function getRandomProfile($suggestId, $profile, $react, $react_unmatch_ids)
     {
         if (count($suggestId) < 30) {
             $listRandomId = CustomerQModel::select('customers.id')
                 ->whereNotIn('customers.id', $react)
                 ->whereNotIn('customers.id', $suggestId)
+                ->whereNotIn('customers.id', $react_unmatch_ids)
                 ->where('customers.id', '<>', $profile->id)
                 ->where('gender', '<>', $profile->gender)
                 ->limit(30)
@@ -917,4 +1188,172 @@ class CustomerController extends Controller
         return $suggestId;
     }
 
+    public function generate_branch_io_link($id, $name)
+    {
+        $link = new Link();
+        $link->setType(UrlType::MARKETING);
+        $link->setChannel('Sharing');
+        $link->setFeature('Shareing');
+        $link->setCampaign('Share Link Get Point');
+        $link->setStage('Stage');
+        $data = [
+            '$always_deeplink' => true,
+            '$ios_url' => env('IOS_LINK'),
+            '$android_url' => env('ANDROID_LINK'),
+
+            '$og_app_id' => env('BRANCH_IO_APP_ID'),
+            '$og_title' => 'CafeLatteDev',
+            '$og_description' => 'Ứng dụng cafelatte kết bạn ghép đôi!',
+            '$og_image_url' => env('SHARE_LINK_IMAGE'),
+
+            '$app_id' => $id,
+            '$marketing_title' => $name . ' share link action'
+        ];
+        $link->setData($data);
+        return Branchio::createLink($link);
+    }
+
+
+    public function get_link_data($link)
+    {
+        return Branchio::getLink($link);
+    }
+
+
+    /**
+     * Send notification to other when give a message to them
+     * @param $request request json
+     * @return void
+     */
+    public function send_notification(Request $request)
+    {
+        error_log("Sending notification..");
+        $message = json_decode(request()->getContent(), true);
+        $user_send_id = $message['fromID'];
+        $user_send = CustomerQModel::get_user_by_id($user_send_id);
+        $user_received_id = $message['toID'];
+        $user_received = CustomerQModel::get_user_by_id($user_received_id);
+        error_log("From " . $user_send_id . " to " . $user_received_id);
+
+        if(empty($user_send) || empty($user_received)) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'The requested user is not found',
+                500
+            );
+        }
+
+        $fcm_token = $user_received->fcm_token;
+
+        if (empty($fcm_token)) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'receiver have no fcm token',
+                500
+            );
+        }
+
+        //Decide body content based on message type
+        $message_type = $message['type'];
+        $message_body = '';
+        switch ($message_type) {
+            case 'photo':
+                $message_body = "Sent you a photo";
+                break;
+            case 'sticker':
+                $message_body = "Sent you a sticker";
+                break;
+            default:
+                $message_body = $message['content'];
+        }
+
+        $notification = [
+            'title' => $user_send->name,
+            'body' => $message_body,
+            'click_action' => 'chat'
+        ];
+        $data = json_decode(request()->getContent(), true);
+        $data['user_img'] = $user_send->image;
+        $data['user_name'] = $user_send->name;
+        error_log("[Notification] chat:");
+        $result = NotificationHelper::send($fcm_token, $notification, $data);
+        if ($result) {
+            return ApiHelper::success(['message' => 'success']);
+        } else {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'Fail to send notification',
+                500
+            );
+        }
+
+    }
+
+    public function direct_message(Request $request)
+    {
+        $user_id = $request->input('user_id');
+        $dm_id = $request->input('direct_message_to_id');
+
+        if (empty($dm_id)) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.customer.remain_dm_not_enough'),
+                'direct message to user id is invalid',
+                400
+            );
+        }
+
+        // check user will direct message
+        $direct_message_user = CustomerQModel::get_user_by_id($dm_id);
+        if (!$direct_message_user) {
+            return ApiHelper::error(
+                config('constant.error_type.not_found'), 404,
+                'direct message to user id not found',
+                404
+            );
+        }
+
+        // get current
+        $user_current = CustomerQModel::get_user_by_id($user_id);
+        $user_current_dm = json_decode($user_current->__dm);
+        $user_current_dm = $user_current_dm ? $user_current_dm : [];
+        if (!empty($user_current_dm) && in_array($direct_message_user->id, $user_current_dm)) {
+            return ApiHelper::success([
+                'message' => 'success',
+                'user_id' => $direct_message_user->id,
+                'remain_direct_message' => $user_current->remain_direct_message
+            ]);
+        }
+        if ($user_current->remain_direct_message == 0) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.customer.remain_dm_not_enough'),
+                __('direct_message.remain_dm_not_enough'),
+                400
+            );
+        }
+
+        // decrease remain direct message user
+        if (empty($user_current_dm)) {
+            $user_current_dm = [$direct_message_user->id]; 
+        } else {
+            array_push($user_current_dm, $direct_message_user->id);
+        }
+
+        $remain_direct_message = $user_current->remain_direct_message - 1;
+
+        CustomerCModel::update_user($user_id, [
+            'remain_direct_message' => $remain_direct_message,
+            '__dm' => json_encode($user_current_dm)
+        ]);
+
+        return ApiHelper::success([
+            'message' => 'success',
+            'direct_message_to_id' => $direct_message_user->id,
+            'remain_direct_message' => $remain_direct_message
+        ]);
+    }
 }

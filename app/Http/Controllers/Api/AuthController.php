@@ -2,7 +2,8 @@
 
 namespace app\Http\Controllers\Api;
 
-use App\Http\Helpers\QuickBloxHelper;
+use App\Http\Helpers\Constants;
+use App\Http\Helpers\FirebaseDatabaseHelper;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\ApiHelper;
@@ -17,9 +18,12 @@ use Iivannov\Branchio\Link;
 
 use \Firebase\JWT\JWT;
 use Facebook\Facebook;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
 
 class AuthController extends Controller
 {
+
     /**
      * Create a new controller instance.
      *
@@ -30,9 +34,105 @@ class AuthController extends Controller
 
     }
 
+    public function login_by_phone(Request $request)
+    {
+        $firebase_token = $request->input('firebase_token');
+
+        if (!$firebase_token) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
+
+        $serviceAccount = FirebaseDatabaseHelper::get_service_account();
+        $firebase = (new Factory)->withServiceAccount($serviceAccount)->create();
+        $auth = $firebase->getAuth();
+        try {
+            $verifiedIdToken = $auth->verifyIdToken($firebase_token);
+        } catch (\InvalidToken $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+        $uid = $verifiedIdToken->getClaim('sub');
+        $phone = $firebase->getAuth()->getUser($uid)->phoneNumber;
+
+        // get current user
+        $user = CustomerQModel::get_user_by_phone($phone);
+        if ($user) {
+            // login
+            $jwt = [
+                'id' => $user->id,
+                'exp' => time() + config('constant.jwt.token_expire')
+            ];
+            $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
+
+            $data_update = [
+                'phone' => $phone,
+                'firebase_uid' => $uid,
+                'token' => $token,
+                'login_at' => date('Y-m-d H:i:s')
+            ];
+
+            if (!$user->share_link) {
+                $share_link = $this->generate_branch_io_link($user->id, $user->name);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+            }
+
+            // moved branch io to set up at the end of process
+            CustomerCModel::update_user($user->id, $data_update);
+            $user = CustomerQModel::get_user_by_phone($phone);
+            return ApiHelper::success($user);
+        } else {
+            // signup
+            try {
+                // moved quickblox to set up to the end of process
+                $data = [
+                    'phone' => $phone,
+                    'firebase_uid' => $uid,
+                    'login_at' => date('Y-m-d H:i:s'),
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'point' => config('constant.customer.remain_like'),
+                    'remain_direct_message' => config('constant.customer.remain_direct_message')
+                ];
+
+                $user_id = CustomerCModel::create_user($data);
+
+                // setup jwt to update token
+                $jwt = [
+                    'id' => $user_id,
+                    'exp' => time() + config('constant.jwt.token_expire')
+                ];
+                $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
+                $data_update = ['token' => $token];
+                // moved branch io to set up at the end of process
+                CustomerCModel::update_user($user_id, $data_update);
+            } catch (\Exception $e) {
+                return ApiHelper::error(
+                    config('constant.error_type.server_error'),
+                    config('constant.error_code.common.server_error'),
+                    'error: ' . $e->getMessage(),
+                    500
+                );
+            }
+            $user = CustomerQModel::get_user_by_phone($phone);
+            return ApiHelper::success($user);
+        }
+    }
+
     public function login(Request $request)
     {
         $facebook_token = $request->input('facebook_token');
+        $uid = $request->input('firebase_uid');
 
         if (!$facebook_token) {
             return ApiHelper::error(
@@ -100,8 +200,10 @@ class AuthController extends Controller
             $data_update = [
                 'token' => $token,
                 'facebook_token' => $facebook_token,
+                'firebase_uid' => $uid,
                 '_friend' => json_encode($friends),
-                'login_at' => date('Y-m-d H:i:s')
+                'login_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ];
 
             if (!$user->share_link) {
@@ -122,23 +224,22 @@ class AuthController extends Controller
         } else {
             // signup
             try {
-                $quickBlox = new QuickBloxHelper();
                 $userEmail = $profile['id'].'@facebook.com';
                 if (isset($profile['email'])) {
                     $userEmail = $profile['email'];
                 }
-                $chatId = $quickBlox->createNewUser($userEmail, $profile['id'], $profile['name']);
                 $data = [
                     'name' => $profile['name'],
                     'image' => json_encode(['https://graph.facebook.com/' . $profile['id'] . '/picture?type=large&width=720&height=720']),
                     'facebook_id' => $profile['id'],
                     'email' => $userEmail,
-                    'chat_id' => $chatId,
+                    'firebase_uid' => $uid,
                     'facebook_token' => $facebook_token,
                     '_friend' => json_encode($friends),
                     'login_at' => date('Y-m-d H:i:s'),
                     'created_at' => date('Y-m-d H:i:s'),
-                    'point' => 10
+                    'point' => config('constant.customer.remain_like'),
+                    'remain_direct_message' => config('constant.customer.remain_direct_message')
                 ];
 
 
@@ -174,6 +275,106 @@ class AuthController extends Controller
 
 
 
+            return ApiHelper::success($user);
+        }
+    }
+
+    public function login_by_apple(Request $request) {
+        $firebase_token = $request->input('firebase_token');
+
+        if (!$firebase_token) {
+            return ApiHelper::error(
+                config('constant.error_type.bad_request'),
+                config('constant.error_code.auth.param_wrong'),
+                'param wrong',
+                400
+            );
+        }
+
+        $serviceAccount = FirebaseDatabaseHelper::get_service_account();
+        $firebase = (new Factory)->withServiceAccount($serviceAccount)->create();
+        $auth = $firebase->getAuth();
+        try {
+            $verifiedIdToken = $auth->verifyIdToken($firebase_token);
+        } catch (\InvalidToken $e) {
+            return ApiHelper::error(
+                config('constant.error_type.server_error'),
+                config('constant.error_code.common.server_error'),
+                'error: ' . $e->getMessage(),
+                500
+            );
+        }
+        $uid = $verifiedIdToken->getClaim('sub');
+        $providerData = $firebase->getAuth()->getUser($uid)->providerData[0];
+        $email = $providerData->email;
+        $apple_id = $providerData->uid;
+        $avatar_url = $providerData->photoUrl;
+        $name = $providerData->displayName;
+
+        // get current user
+        $user = CustomerQModel::get_user_by_apple_id($apple_id);
+        if ($user) {
+            // login
+            $jwt = [
+                'id' => $user->id,
+                'exp' => time() + config('constant.jwt.token_expire')
+            ];
+            $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
+
+            $data_update = [
+                'firebase_uid' => $uid,
+                'token' => $token,
+                'login_at' => date('Y-m-d H:i:s')
+            ];
+
+            if (!$user->share_link) {
+                $share_link = $this->generate_branch_io_link($user->id, $user->name);
+                $detail_link = $this->get_link_data($share_link);
+                $data_update['share_link_id'] = $detail_link->data->{'~id'};
+                $data_update['share_link'] = $share_link;
+                $data_update['share_link_created_at'] = Carbon::now();
+            }
+
+            // moved branch io to set up at the end of process
+            CustomerCModel::update_user($user->id, $data_update);
+            $user = CustomerQModel::get_user_by_apple_id($apple_id);
+            return ApiHelper::success($user);
+        } else {
+            // signup
+            try {
+                // moved quickblox to set up to the end of process
+                $data = [
+                    'email' => $email,
+                    'name' => $name,
+                    'firebase_uid' => $uid,
+                    'image' => $avatar_url,
+                    'apple_id' => $apple_id,
+                    'login_at' => date('Y-m-d H:i:s'),
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'point' => config('constant.customer.remain_like'),
+                    'remain_direct_message' => config('constant.customer.remain_direct_message')
+                ];
+
+                $user_id = CustomerCModel::create_user($data);
+
+                // setup jwt to update token
+                $jwt = [
+                    'id' => $user_id,
+                    'exp' => time() + config('constant.jwt.token_expire')
+                ];
+                $token = JWT::encode($jwt, env('JWT_KEY')); // JWT::decode($token, env('JWT_KEY'), ['HS256']);
+                $data_update = ['token' => $token];
+                // moved branch io to set up at the end of process
+                CustomerCModel::update_user($user_id, $data_update);
+            } catch (\Exception $e) {
+                return ApiHelper::error(
+                    config('constant.error_type.server_error'),
+                    config('constant.error_code.common.server_error'),
+                    'error: ' . $e->getMessage(),
+                    500
+                );
+            }
+            $user = CustomerQModel::get_user_by_apple_id($email);
             return ApiHelper::success($user);
         }
     }

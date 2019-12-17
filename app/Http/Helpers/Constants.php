@@ -38,4 +38,6 @@ Class Constants {
             'url' => 'uploads/user',
         ],
     ];
+
+    const FirebaseJsonFileName = '/cafe-latte-198808-firebase-adminsdk-l67b1-d8841a097d.json';
 }

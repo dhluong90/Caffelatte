@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Models\Dal\CustomerQModel;
 use App\Http\Helpers\ApiHelper;
@@ -55,6 +56,8 @@ class ApiToken
         }
 
         $request->request->add(['user_id' => $user->id]);
+        $request->request->add(['lang' => $user->language]);
+        App::setLocale($user->language);
 
         return $next($request);
     }
