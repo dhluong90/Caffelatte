@@ -96,6 +96,9 @@ class NotificationSend extends Command
                 $fcmNotification['registration_ids'] = $listGetEnMessage->slice($i, 1000)->values()->all();
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
                 $result = curl_exec($ch);
+                error_log("[Notification] daily:");
+                error_log(json_encode($fcmNotification));
+                error_log(json_encode($result));
                 $i = $i + 1000;
             }
             curl_close($ch);
@@ -115,6 +118,9 @@ class NotificationSend extends Command
                 $fcmNotification['registration_ids'] = $listGetViMessage->slice($i, 1000)->values()->all();
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
                 $result = curl_exec($ch);
+                error_log("[Notification] daily:");
+                error_log(json_encode($fcmNotification));
+                error_log(json_encode($result));
                 $i = $i + 1000;
             }
             curl_close($ch);
