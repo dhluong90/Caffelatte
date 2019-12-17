@@ -52,10 +52,10 @@ class NotificationSend extends Command
     {
 
         $list_customer_vi = CustomerQModel::get_users_fcm_token_with_language_and_country('vi_vn');
-        $listGetViMessage = $list_customer_vi->pluck('fcm_token');
+        $listGetViMessage = $list_customer_vi->pluck('fcm_token')->unique();
 
         $list_customer = CustomerQModel::get_users_fcm_token_with_language_and_country('');
-        $listGetEnMessage = $list_customer->pluck('fcm_token');
+        $listGetEnMessage = $list_customer->pluck('fcm_token')->unique();
         $listGetEnMessage = $listGetEnMessage->diff($listGetViMessage);
 
         $message = $this->get_notification_message();
@@ -96,6 +96,9 @@ class NotificationSend extends Command
                 $fcmNotification['registration_ids'] = $listGetEnMessage->slice($i, 1000)->values()->all();
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
                 $result = curl_exec($ch);
+                error_log("[Notification] daily:");
+                error_log(json_encode($fcmNotification));
+                error_log(json_encode($result));
                 $i = $i + 1000;
             }
             curl_close($ch);
@@ -115,6 +118,9 @@ class NotificationSend extends Command
                 $fcmNotification['registration_ids'] = $listGetViMessage->slice($i, 1000)->values()->all();
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fcmNotification));
                 $result = curl_exec($ch);
+                error_log("[Notification] daily:");
+                error_log(json_encode($fcmNotification));
+                error_log(json_encode($result));
                 $i = $i + 1000;
             }
             curl_close($ch);
