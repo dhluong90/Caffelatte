@@ -52,10 +52,10 @@ class NotificationSend extends Command
     {
 
         $list_customer_vi = CustomerQModel::get_users_fcm_token_with_language_and_country('vi_vn');
-        $listGetViMessage = $list_customer_vi->pluck('fcm_token');
+        $listGetViMessage = $list_customer_vi->pluck('fcm_token')->unique();
 
         $list_customer = CustomerQModel::get_users_fcm_token_with_language_and_country('');
-        $listGetEnMessage = $list_customer->pluck('fcm_token');
+        $listGetEnMessage = $list_customer->pluck('fcm_token')->unique();
         $listGetEnMessage = $listGetEnMessage->diff($listGetViMessage);
 
         $message = $this->get_notification_message();

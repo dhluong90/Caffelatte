@@ -442,10 +442,10 @@ class CustomerController extends Controller
                     $conversationID = FirebaseDatabaseHelper::get_firebase_connection()->getReference('Conversations')
                         ->push([[
                             'content' => '',
-                            'fromID' => $user_current->id . '',
+                            'fromID' => (string) $user_current->id,
                             'seen' => false,
                             'timestamp' => time(),
-                            'toID' => $user_matching->id . '',
+                            'toID' => (string) $user_matching->id,
                             'type' => 'init'
                         ]])->getKey();
                 }
@@ -472,7 +472,7 @@ class CustomerController extends Controller
                 // a notification include notification payload & data payload. type default contain both.
                 $notification_type = $request->input('notification_type', 'default');
                 $notification = [
-                    'title' => 'Cafelatte',
+                    'title' => 'Cafe & Latte',
                     'body' => $user_current->name . ' like you'
                 ];
                 $data = [
@@ -485,7 +485,7 @@ class CustomerController extends Controller
                 if ($notification_type === 'data') {
                     $notification = null;
                     $data = [
-                        'title' => 'Cafelatte',
+                        'title' => 'Cafe & Latte',
                         'body' => $user_current->name . ' like you',
                         'user_id' => $user_current->id,
                         'user_img' => $user_current->image,
