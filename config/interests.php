@@ -1,14 +1,14 @@
 <?php 
 return [
 	'en' => [
-		'traveling' => 'Tranveling',
+		'traveling' => 'Traveling',
 		'healthAndSports' => 'Health and Sports',
 		'movies' => 'Movies',
 		'cooking' => 'Cooking',
 		'arts' => 'Arts',
 		'music' => 'Music',
 		'pets' => 'Pets',
-		'foods' => 'Foods',
+		'food' => 'Food',
 		'coffee' => 'Coffee',
 		'reading' => 'Reading'
 	],
@@ -20,7 +20,7 @@ return [
 		'arts' => 'Nghệ Thuật',
 		'music' => 'Âm Nhạc',
 		'pets' => 'Thú Cưng',
-		'foods' => 'Ẩm Thực',
+		'food' => 'Ẩm Thực',
 		'coffee' => 'Coffee',
 		'reading' => 'Đọc Sách'
 	]
